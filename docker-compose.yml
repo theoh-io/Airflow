@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  dev:
+    build: .
+    image: microclimatefoam:dev
+    volumes:
+      - ./src:/workspace/src
+      - /tmp/.X11-unix:/tmp/.X11-unix  # X11 socket for ParaView GUI
+    environment:
+      - DISPLAY=${DISPLAY}  # Share host display
+    network_mode: host      # Required for X11 forwarding
+    stdin_open: true
+    tty: true
