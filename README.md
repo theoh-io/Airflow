@@ -59,8 +59,8 @@ wmake
 - ✅ **Phase 0 – Environment & Skeleton**: Docker image, Compose workflow, and minimal solver build are working.
 - ✅ **Phase 1 – Flow Solver Core**: Incompressible momentum equation with PISO loop implemented and tested.
 - ✅ **Phase 2 – Thermal Transport**: Temperature transport equation with Boussinesq buoyancy coupling implemented and tested.
-- 🚧 **Phase 3 – Verification & Tooling**: Tutorial cases, automated regression, CI (next priority).
-- 🗓 **Phase 4 – Visualization & UX**: ParaView guidance and post-processing scripts.
+- ✅ **Phase 3 – Verification & Tooling**: Automated regression testing and CI (GitHub Actions) implemented.
+- 🚧 **Phase 4 – Visualization & UX**: ParaView guidance and post-processing scripts (next priority).
 
 See `docs/roadmap.md` for the detailed checklist.
 
@@ -79,11 +79,17 @@ See `docs/roadmap.md` for the detailed checklist.
    ```
 3. **Test environment**
    ```bash
-   ./test_env.sh          # runs wmake + binary sanity checks
-   ./test_docker.sh       # lighter-weight smoke test
+   ./test_env.sh          # Full regression test: compilation, mesh generation, solver execution, output verification
+   ./test_docker.sh       # Lighter-weight smoke test
    ```
 
-> `test_env.sh` is written to run inside the container root (`/workspace`). It suppresses the OpenFOAM welcome banner so CI logs stay readable.
+> `test_env.sh` runs a complete regression test including:
+> - Solver compilation
+> - Binary verification
+> - Heated cavity case: mesh generation (`blockMesh`), quality check (`checkMesh`), solver execution (5 time steps), and output file verification (U, p, T, phi fields)
+> - Log analysis for fatal errors
+> 
+> The script is designed to run inside the container and is used by CI for automated testing.
 
 ### Heated Cavity One-Liner
 
@@ -138,15 +144,25 @@ docker run --rm --entrypoint "" -i microclimatefoam:dev bash -lc '
 '
 ```
 
+## Continuous Integration
+
+The project includes GitHub Actions CI (`.github/workflows/ci.yml`) that automatically:
+
+- Builds the Docker image on every push and pull request
+- Runs the full regression test suite (`test_env.sh`)
+- Validates solver compilation, mesh generation, and case execution
+- Verifies output files are generated correctly
+
+The CI runs on Ubuntu latest and tests the complete workflow from compilation to case execution. Check the [Actions tab](https://github.com/your-repo/actions) in your GitHub repository to see CI status.
+
 ## Documentation & Next Steps
 
 - `docs/roadmap.md`: canonical tracker for phases and tasks.
-- **Phase 2 Complete**: The solver now implements coupled flow and thermal transport with Boussinesq buoyancy. The heated cavity case demonstrates natural convection with temperature-driven flow.
+- **Phase 3 Complete**: Automated regression testing via `test_env.sh` and CI via GitHub Actions are now in place. The test suite validates compilation, mesh generation, solver execution, and output verification.
 - Upcoming work:
-  - extend test scripts to execute the tutorial case and capture residuals (Phase 3)
-  - add CI (GitHub Actions) for automated builds and regression testing (Phase 3)
   - document ParaView/X11 setup for Linux, macOS, and WSL2 users (Phase 4)
   - provide ParaView state files for standard visualizations (Phase 4)
+  - package post-processing scripts for reproducible figures (Phase 4)
 
 Contributions should update both the roadmap and this section so users can quickly tell what’s done versus planned.
 

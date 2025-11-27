@@ -16,10 +16,10 @@
 - [x] Support buoyancy via Boussinesq approximation (integrated into momentum equation).
 - [x] Document energy-specific stabilisation / relaxation controls (via fvSolution relaxationFactors).
 
-## Phase 3 — Verification & Tooling (🗓 Planned)
+## Phase 3 — Verification & Tooling (✅ Done)
 - [x] Seed heated cavity tutorial (`cases/heatedCavity`) with mesh and run instructions.
-- [ ] Automate case regression inside the container (extend `test_env.sh`).
-- [ ] Add CI (GitHub Actions) to build Docker image, run `wmake`, and execute the tutorial case headless.
+- [x] Automate case regression inside the container (extend `test_env.sh`).
+- [x] Add CI (GitHub Actions) to build Docker image, run `wmake`, and execute the tutorial case headless.
 
 ## Phase 4 — Visualization & UX (🗓 Planned)
 - [ ] Document ParaView / X11 setup for Linux, macOS, and WSL2.
