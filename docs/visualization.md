@@ -2,6 +2,8 @@
 
 This guide explains how to visualize microClimateFoam results using ParaView, which is included in the Docker image.
 
+> **Quick Reference**: See `docs/visualization_quickref.md` for a condensed cheat sheet of common commands and workflows.
+
 ## ParaView Setup
 
 ### Linux (Native)
@@ -87,18 +89,24 @@ ParaView is available in the Docker container. To use the GUI:
 
 ### Method 2: Using ParaView State Files
 
-Pre-configured state files are available in `docs/paraview/`:
+State files can be created and saved for reproducible visualizations. See `docs/paraview/README.md` for instructions on creating and using state files.
 
-1. **Load the state file**:
+1. **Create a state file** (see `docs/paraview/README.md` for detailed steps):
+   - Set up your visualization in ParaView
+   - File → Save State
+   - Save as `.pvsm` file
+
+2. **Load a state file**:
    - File → Load State
-   - Select `docs/paraview/heated_cavity.pvsm`
+   - Select the `.pvsm` file
    - ParaView will prompt for the data file - point it to your case directory
 
-2. **State files include**:
+3. **State files can include**:
    - Temperature contour slices
    - Velocity vectors
    - Streamlines
    - Color maps and legends
+   - Multi-view layouts
 
 ## Standard Visualizations
 
@@ -149,16 +157,54 @@ This generates:
 - Statistics at specific locations
 - CSV output for further analysis
 
-### Generate Plots
+### Generate Visualization Images (Automated)
+
+**Automated image generation** without opening ParaView GUI using headless ParaView rendering:
+
+```bash
+# Using the wrapper script (recommended)
+./scripts/postprocess/generate_images.sh cases/heatedCavity 200
+
+# Or directly with pvpython
+docker compose run --rm dev bash -c "
+  cd /workspace
+  /opt/paraviewopenfoam56/bin/pvpython scripts/postprocess/generate_images.py cases/heatedCavity 200
+"
+```
+
+This generates 4 standard images in `cases/heatedCavity/images/`:
+- `temperature_200.png` - Temperature contour slice with adaptive color range
+- `velocity_200.png` - Velocity vector field with adaptive scaling
+- `streamlines_200.png` - Streamline visualization
+- `overview_200.png` - Combined temperature and velocity overlay
+
+**Adaptive Features:**
+The script automatically adapts to different test cases:
+- **Velocity scaling**: Automatically calculates optimal vector size based on domain dimensions and velocity magnitude (target: ~7% of domain size)
+- **Temperature range**: Auto-detects temperature range and focuses on internal field variation (handles boundary values intelligently)
+- **Mesh density**: Adaptively adjusts vector density (stride) based on mesh size for optimal visualization
+- **Domain detection**: Automatically detects domain bounds and characteristic length
+
+**Options:**
+- `--output-dir DIR` - Custom output directory (default: `images/`)
+- `--width W` - Image width in pixels (default: 1200)
+- `--height H` - Image height in pixels (default: 800)
+- `--no-overview` - Skip overview image generation
+
+**Use cases:**
+- Quick visual inspection of results
+- CI/CD integration for automated visualization
+- Batch processing multiple time steps
+- Generating figures for reports/papers
+- Works automatically with different domain sizes, velocity ranges, and mesh densities
+
+### Generate Visualization Scripts
 
 ```bash
 python scripts/postprocess/plot_fields.py cases/heatedCavity
 ```
 
-Creates publication-ready figures:
-- Temperature distribution
-- Velocity magnitude
-- Pressure contours
+Creates ParaView Python scripts for interactive visualization setup.
 
 ## Troubleshooting
 

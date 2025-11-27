@@ -157,7 +157,7 @@ The CI runs on Ubuntu latest and tests the complete workflow from compilation to
 
 ## Visualization
 
-See `docs/visualization.md` for complete visualization setup instructions.
+See `docs/visualization.md` for complete visualization setup instructions. For a quick reference, see `docs/visualization_quickref.md`.
 
 ### Quick Start
 
@@ -177,6 +177,16 @@ See `docs/visualization.md` for complete visualization setup instructions.
 
 ### Post-Processing Scripts
 
+**Generate visualization images** (automated, no GUI required, adaptive scaling):
+```bash
+./scripts/postprocess/generate_images.sh cases/heatedCavity 200
+```
+Generates 4 standard images: temperature contour, velocity vectors, streamlines, and overview. The script automatically adapts to different test cases:
+- **Adaptive velocity scaling**: Automatically calculates optimal vector size based on domain and velocity magnitude
+- **Adaptive temperature range**: Auto-detects and focuses on internal field variation
+- **Adaptive mesh density**: Adjusts vector density based on mesh size
+- Perfect for quick inspection, CI integration, and works across different case configurations
+
 **Extract field statistics**:
 ```bash
 python scripts/postprocess/extract_stats.py cases/heatedCavity 200
@@ -186,8 +196,6 @@ python scripts/postprocess/extract_stats.py cases/heatedCavity 200
 ```bash
 python scripts/postprocess/plot_fields.py cases/heatedCavity 200
 ```
-
-This creates a ParaView Python script for automated visualization.
 
 ### Platform-Specific Setup
 

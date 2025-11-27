@@ -25,6 +25,11 @@
 - [x] Document ParaView / X11 setup for Linux, macOS, and WSL2.
 - [x] Provide ParaView state files for standard plots (wind vectors, temperature slices) - see `docs/paraview/README.md`.
 - [x] Package post-processing scripts (Python scripts for field extraction and visualization setup).
+- [x] Implement automated headless image generation with adaptive scaling:
+  - [x] Adaptive velocity vector scaling based on domain size and velocity magnitude
+  - [x] Adaptive temperature range detection with intelligent boundary handling
+  - [x] Adaptive mesh density adjustment for optimal vector visualization
+  - [x] Works automatically across different test cases and configurations
 
 > Update this roadmap as phases complete or tasks evolve so that contributors have a single source of truth.
 
