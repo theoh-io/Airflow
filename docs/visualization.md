@@ -76,14 +76,16 @@ ParaView is available in the Docker container. To use the GUI:
 
 2. **Open the case**:
    - File → Open
-   - Navigate to your case directory (e.g., `cases/heatedCavity`)
+   - Navigate to your case directory (e.g., `custom_cases/heatedCavity` or `cases/[tutorialCase]`)
    - Select the `.foam` file (create it if it doesn't exist - see below)
    - Click OK
 
 3. **Create `.foam` file** (if missing):
    ```bash
    # Inside case directory
-   touch cases/heatedCavity/heatedCavity.foam
+   touch custom_cases/heatedCavity/heatedCavity.foam
+   # Or for tutorial cases:
+   touch cases/[tutorialCase]/[tutorialCase].foam
    ```
    The `.foam` file is a simple text file that tells ParaView this is an OpenFOAM case.
 
@@ -148,7 +150,9 @@ Python scripts are available in `scripts/postprocess/` for automated analysis:
 ### Extract Field Statistics
 
 ```bash
-python scripts/postprocess/extract_stats.py cases/heatedCavity
+python scripts/postprocess/extract_stats.py custom_cases/heatedCavity
+# Or for tutorial cases:
+python scripts/postprocess/extract_stats.py cases/[tutorialCase]
 ```
 
 This generates:
@@ -163,16 +167,18 @@ This generates:
 
 ```bash
 # Using the wrapper script (recommended)
-./scripts/postprocess/generate_images.sh cases/heatedCavity 200
+./scripts/postprocess/generate_images.sh custom_cases/heatedCavity 200
+# Or for tutorial cases:
+./scripts/postprocess/generate_images.sh cases/[tutorialCase] [time]
 
 # Or directly with pvpython
 docker compose run --rm dev bash -c "
   cd /workspace
-  /opt/paraviewopenfoam56/bin/pvpython scripts/postprocess/generate_images.py cases/heatedCavity 200
+  /opt/paraviewopenfoam56/bin/pvpython scripts/postprocess/generate_images.py custom_cases/heatedCavity 200
 "
 ```
 
-This generates 4 standard images in `cases/heatedCavity/images/`:
+This generates 4 standard images in `custom_cases/heatedCavity/images/` (or `cases/[tutorialCase]/images/`):
 - `temperature_200.png` - Temperature contour slice with adaptive color range
 - `velocity_200.png` - Velocity vector field with adaptive scaling
 - `streamlines_200.png` - Streamline visualization
@@ -234,8 +240,14 @@ For CI or server environments without display:
 # Export to VTK format
 docker compose run --rm dev bash -c "
   source /opt/openfoam8/etc/bashrc
-  cd /workspace/cases/heatedCavity
+  cd /workspace/custom_cases/heatedCavity
   foamToVTK -time 200
+"
+# Or for tutorial cases:
+docker compose run --rm dev bash -c "
+  source /opt/openfoam8/etc/bashrc
+  cd /workspace/cases/[tutorialCase]
+  foamToVTK -time [time]
 "
 ```
 

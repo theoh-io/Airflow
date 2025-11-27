@@ -5,7 +5,7 @@ This directory contains ParaView state files (`.pvsm`) for visualizing microClim
 ## Creating a State File
 
 1. **Open your case in ParaView**:
-   - File → Open → Select `cases/heatedCavity/heatedCavity.foam`
+   - File → Open → Select `custom_cases/heatedCavity/heatedCavity.foam` (or `cases/[tutorialCase]/[tutorialCase].foam`)
    - Click OK
 
 2. **Set up your visualization**:
@@ -25,7 +25,7 @@ This directory contains ParaView state files (`.pvsm`) for visualizing microClim
 2. **Load the state**:
    - File → Load State
    - Select the `.pvsm` file
-   - When prompted, point to your case directory (e.g., `cases/heatedCavity`)
+   - When prompted, point to your case directory (e.g., `custom_cases/heatedCavity` or `cases/[tutorialCase]`)
 
 3. **The visualization will be restored** with all filters and settings
 

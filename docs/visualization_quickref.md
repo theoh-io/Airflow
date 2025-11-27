@@ -6,35 +6,35 @@ Quick reference guide for common visualization tasks.
 
 - [ ] Install X11 server (Linux: X11 apps, macOS: XQuartz, WSL2: VcXsrv)
 - [ ] Configure X11 forwarding (`xhost +local:docker` for Linux)
-- [ ] Create `.foam` file: `./scripts/create_foam_file.sh cases/heatedCavity`
+- [ ] Create `.foam` file: `./scripts/create_foam_file.sh custom_cases/heatedCavity`
 - [ ] Start ParaView: `docker compose run --rm dev paraview`
 
 ## Common Commands
 
 ```bash
 # Create ParaView case file
-./scripts/create_foam_file.sh cases/heatedCavity
+./scripts/create_foam_file.sh custom_cases/heatedCavity
 
 # Generate visualization images (automated, no GUI, adaptive scaling)
-./scripts/postprocess/generate_images.sh cases/heatedCavity 200
+./scripts/postprocess/generate_images.sh custom_cases/heatedCavity 200
 
 # Extract field statistics
-python scripts/postprocess/extract_stats.py cases/heatedCavity 200
+python scripts/postprocess/extract_stats.py custom_cases/heatedCavity 200
 
 # Generate visualization script
-python scripts/postprocess/plot_fields.py cases/heatedCavity 200
+python scripts/postprocess/plot_fields.py custom_cases/heatedCavity 200
 
 # Convert to VTK (headless)
 docker compose run --rm dev bash -c "
   source /opt/openfoam8/etc/bashrc
-  cd /workspace/cases/heatedCavity
+  cd /workspace/custom_cases/heatedCavity
   foamToVTK -time 200
 "
 ```
 
 ## ParaView Workflow
 
-1. **Open case**: File → Open → `cases/heatedCavity/heatedCavity.foam`
+1. **Open case**: File → Open → `custom_cases/heatedCavity/heatedCavity.foam` (or `cases/[tutorialCase]/[tutorialCase].foam`)
 2. **Apply filters**:
    - Slice (for 2D view)
    - Glyph (for vectors)
@@ -61,10 +61,12 @@ docker compose run --rm dev bash -c "
 
 ## File Locations
 
-- Case file: `cases/heatedCavity/heatedCavity.foam`
-- Statistics: `cases/heatedCavity/stats_*.csv`
-- Visualization script: `cases/heatedCavity/visualize_*.py`
-- VTK files: `cases/heatedCavity/VTK/` (if using foamToVTK)
+- Custom cases: `custom_cases/heatedCavity/`
+- Tutorial cases: `cases/[tutorialCase]/` (after Phase 5 integration)
+- Case file: `custom_cases/heatedCavity/heatedCavity.foam`
+- Statistics: `custom_cases/heatedCavity/stats_*.csv`
+- Visualization script: `custom_cases/heatedCavity/visualize_*.py`
+- VTK files: `custom_cases/heatedCavity/VTK/` (if using foamToVTK)
 
 ## Documentation
 

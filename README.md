@@ -46,12 +46,17 @@ wmake
 ├── Dockerfile              # OpenFOAM 8 + ParaView 5.6.0 container
 ├── docker-compose.yml      # Docker Compose configuration
 ├── src/
-│   └── microClimateFoam/   # Solver source code
-│       ├── microClimateFoam.C  # Main solver file
-│       └── Make/           # Build configuration
-│           ├── files       # Source files to compile
-│           └── options     # Compiler flags and libraries
-└── README.md
+│   ├── microClimateFoam/   # Custom solver (incompressible flow + thermal transport)
+│   │   ├── microClimateFoam.C
+│   │   └── Make/
+│   └── urbanMicroclimateFoam/  # urbanMicroclimateFoam solver (to be integrated)
+│       └── (cloned from OpenFOAM-BuildingPhysics/urbanMicroclimateFoam)
+├── custom_cases/           # Custom validation/test cases
+│   └── heatedCavity/       # microClimateFoam validation case
+├── cases/                  # Tutorial cases (from urbanMicroclimateFoam-tutorials)
+│   └── (cloned from OpenFOAM-BuildingPhysics/urbanMicroclimateFoam-tutorials)
+├── scripts/                # Helper scripts for building, running, testing
+└── docs/                   # Documentation
 ```
 
 ## Status & Roadmap
@@ -61,6 +66,7 @@ wmake
 - ✅ **Phase 2 – Thermal Transport**: Temperature transport equation with Boussinesq buoyancy coupling implemented and tested.
 - ✅ **Phase 3 – Verification & Tooling**: Automated regression testing and CI (GitHub Actions) implemented.
 - ✅ **Phase 4 – Visualization & UX**: ParaView setup documentation, post-processing scripts, and visualization tools implemented.
+- 🔄 **Phase 5 – Multi-Solver Integration**: Integrating `urbanMicroclimateFoam` solver and tutorial cases (in progress).
 
 See `docs/roadmap.md` for the detailed checklist.
 
@@ -104,7 +110,9 @@ To compile the solver, regenerate the heated cavity mesh, and run the tutorial c
 ./scripts/run_heated_cavity.sh
 ```
 
-The script uses `docker compose run dev` under the hood and writes the solver log to `cases/heatedCavity/log.microClimateFoam`.
+The script uses `docker compose run dev` under the hood and writes the solver log to `custom_cases/heatedCavity/log.microClimateFoam`.
+
+> **Note:** The `cases/` directory will be renamed to `custom_cases/` to make room for tutorial cases from `urbanMicroclimateFoam-tutorials`.
 
 ### Generic Case Runner
 
@@ -112,17 +120,24 @@ For other cases, use the flexible helper:
 
 ```bash
 # Build solver, run blockMesh + checkMesh (if present), and launch microClimateFoam
-./scripts/run_case.sh cases/heatedCavity
+./scripts/run_case.sh custom_cases/heatedCavity
 
 # Run in parallel mode (auto-creates decomposeParDict if missing)
-./scripts/run_case.sh -p 4 cases/heatedCavity
+./scripts/run_case.sh -p 4 custom_cases/heatedCavity
+
+# Run a case with a different solver
+./scripts/run_case.sh -n -B cases/tutorialCase urbanMicroclimateFoam
 
 # Skip wmake, skip blockMesh, and run another solver with custom args
-./scripts/run_case.sh -n -B cases/myCase buoyantBoussinesqSimpleFoam -- -parallel
+./scripts/run_case.sh -n -B custom_cases/myCase buoyantBoussinesqSimpleFoam -- -parallel
 
 # Parallel run without reconstruction (keeps decomposed results)
-./scripts/run_case.sh -p 2 -R cases/myCase
+./scripts/run_case.sh -p 2 -R custom_cases/myCase
 ```
+
+> **Note:** After Phase 5 integration, cases will be organized as:
+> - `custom_cases/` - Custom validation/test cases (e.g., `heatedCavity`)
+> - `cases/` - Tutorial cases from `urbanMicroclimateFoam-tutorials`
 
 **Features:**
 - Automatically runs `checkMesh` after `blockMesh` to validate mesh quality
@@ -137,13 +152,13 @@ Logs are written to `log.<solver>` inside the case directory. Run `./scripts/run
 Compose should now work out of the box (bind mounting the entire repo at `/workspace`). If Docker Desktop integration ever regresses, you can still stream the necessary directories into a short-lived container:
 
 ```bash
-tar -cf - src cases/heatedCavity | \
+tar -cf - src custom_cases/heatedCavity | \
 docker run --rm --entrypoint "" -i microclimatefoam:dev bash -lc '
   mkdir -p /tmp/workdir && cd /tmp/workdir
   tar -xf -
   source /opt/openfoam8/etc/bashrc
   cd src/microClimateFoam && wmake
-  cd /tmp/workdir/cases/heatedCavity
+  cd /tmp/workdir/custom_cases/heatedCavity
   blockMesh
   microClimateFoam
 '
@@ -168,7 +183,7 @@ See `docs/visualization.md` for complete visualization setup instructions. For a
 
 1. **Create ParaView case file**:
    ```bash
-   ./scripts/create_foam_file.sh cases/heatedCavity
+   ./scripts/create_foam_file.sh custom_cases/heatedCavity
    ```
 
 2. **Start ParaView** (Linux example):
@@ -178,13 +193,15 @@ See `docs/visualization.md` for complete visualization setup instructions. For a
    ```
 
 3. **Open the case**:
-   - File → Open → `cases/heatedCavity/heatedCavity.foam`
+   - File → Open → `custom_cases/heatedCavity/heatedCavity.foam` (or `cases/[tutorialCase]/[tutorialCase].foam`)
 
 ### Post-Processing Scripts
 
 **Generate visualization images** (automated, no GUI required, adaptive scaling):
 ```bash
-./scripts/postprocess/generate_images.sh cases/heatedCavity 200
+./scripts/postprocess/generate_images.sh custom_cases/heatedCavity 200
+# Or for tutorial cases:
+./scripts/postprocess/generate_images.sh cases/[tutorialCase] [time]
 ```
 Generates 4 standard images: temperature contour, velocity vectors, streamlines, and overview. The script automatically adapts to different test cases:
 - **Adaptive velocity scaling**: Automatically calculates optimal vector size based on domain and velocity magnitude
@@ -194,12 +211,16 @@ Generates 4 standard images: temperature contour, velocity vectors, streamlines,
 
 **Extract field statistics**:
 ```bash
-python scripts/postprocess/extract_stats.py cases/heatedCavity 200
+python scripts/postprocess/extract_stats.py custom_cases/heatedCavity 200
+# Or for tutorial cases:
+python scripts/postprocess/extract_stats.py cases/[tutorialCase] [time]
 ```
 
 **Generate visualization setup**:
 ```bash
-python scripts/postprocess/plot_fields.py cases/heatedCavity 200
+python scripts/postprocess/plot_fields.py custom_cases/heatedCavity 200
+# Or for tutorial cases:
+python scripts/postprocess/plot_fields.py cases/[tutorialCase] [time]
 ```
 
 ### Platform-Specific Setup
@@ -214,30 +235,12 @@ Full details in `docs/visualization.md`.
 
 - `docs/roadmap.md`: canonical tracker for phases and tasks.
 - `docs/visualization.md`: complete visualization guide with platform-specific instructions.
-- **All Phases Complete**: The solver is fully functional with flow, thermal transport, automated testing, and visualization tools.
-- Future enhancements:
-  - Additional turbulence models
-  - Advanced boundary conditions
-  - More tutorial cases
-  - Performance optimizations
+- **Phase 5 In Progress**: Multi-solver integration with `urbanMicroclimateFoam` and tutorial cases
+- **Future enhancements** (see `docs/roadmap.md`):
+  - Case management and standardization (Phase 6)
+  - Solver comparison and benchmarking (Phase 7)
+  - Turbulence modeling (Phase 8)
+  - Advanced features and optimizations (Phase 9)
 
 Contributions should update both the roadmap and this section so users can quickly tell what’s done versus planned.
 
-## Heated Cavity Tutorial Case
-
-A validation case that mirrors `hotRoom` from `buoyantBoussinesqSimpleFoam` lives in `cases/heatedCavity`.
-
-Inside the dev container:
-
-```bash
-cd /workspace/cases/heatedCavity
-blockMesh
-microClimateFoam
-```
-
-Key features:
-- 1×1×0.01 m cavity mesh (40×40×1 cells) with `empty` front/back to approximate 2D.
-- Hot wall (`315 K`) on the left, cold wall (`285 K`) on the right, adiabatic top/bottom.
-- Laminar, transient configuration with Boussinesq buoyancy parameters in `constant/transportProperties`.
-
-Use this case to iterate on solver coupling between `U`, `p`, and `T`. Update the roadmap once the solver reproduces the expected buoyant plume.
