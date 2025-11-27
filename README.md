@@ -7,6 +7,7 @@ OpenFOAM 8 solver for microclimate simulations (wind, temperature around buildin
 ### Using Docker Compose (recommended)
 ```bash
 # Build and start dev environment
+docker compose build              # UID/GID-aware build (see note below)
 docker compose up -d
 docker compose exec dev bash
 
@@ -15,6 +16,14 @@ source /opt/openfoam8/etc/bashrc
 cd /workspace/src/microClimateFoam
 wmake
 ```
+
+> The image aligns the container `openfoam` user with your host UID/GID so bind mounts stay writable. When building manually (without `docker compose build`), pass your IDs explicitly:
+> ```bash
+> docker build \
+>   --build-arg USER_UID=$(id -u) \
+>   --build-arg USER_GID=$(id -g) \
+>   -t microclimatefoam:dev .
+> ```
 
 ### Using Docker directly
 ```bash
@@ -76,12 +85,11 @@ See `docs/roadmap.md` for the detailed checklist.
 
 > `test_env.sh` is written to run inside the container root (`/workspace`). It suppresses the OpenFOAM welcome banner so CI logs stay readable.
 
-### WSL / Docker Desktop workaround
+### WSL / Docker Desktop fallback
 
-If Docker Desktop integration with WSL isn’t enabled, `docker compose` and bind mounts like `-v $(pwd):/workspace` may fail. Until integration is fixed you can stream the case into the container, build, and run everything from a temporary directory:
+The compose workflow should now work out-of-the-box (bind mounting the entire repo at `/workspace`). If Docker Desktop integration ever regresses, you can still stream the necessary directories into a short-lived container:
 
 ```bash
-# from repo root on WSL
 tar -cf - src cases/heatedCavity | \
 docker run --rm --entrypoint "" -i microclimatefoam:dev bash -lc '
   mkdir -p /tmp/workdir && cd /tmp/workdir
@@ -93,8 +101,6 @@ docker run --rm --entrypoint "" -i microclimatefoam:dev bash -lc '
   microClimateFoam
 '
 ```
-
-This keeps the host filesystem read-only, so logging happens inside the container (e.g., `/tmp/workdir/cases/heatedCavity/log.microClimateFoam`). Copy any artifacts out before the container exits if you need them.
 
 ## Documentation & Next Steps
 

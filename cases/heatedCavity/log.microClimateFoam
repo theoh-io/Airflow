@@ -1,0 +1,830 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+Build  : 8-1c9b5879390b
+Exec   : microClimateFoam
+Date   : Nov 27 2025
+Time   : 13:53:16
+Host   : "docker-desktop"
+PID    : 267
+I/O    : uncollated
+Case   : /workspace/cases/heatedCavity
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 10)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0
+
+
+Starting time loop
+
+Time = 0.5
+
+Time = 1
+
+Time = 1.5
+
+Time = 2
+
+Time = 2.5
+
+Time = 3
+
+Time = 3.5
+
+Time = 4
+
+Time = 4.5
+
+Time = 5
+
+Time = 5.5
+
+Time = 6
+
+Time = 6.5
+
+Time = 7
+
+Time = 7.5
+
+Time = 8
+
+Time = 8.5
+
+Time = 9
+
+Time = 9.5
+
+Time = 10
+
+Time = 10.5
+
+Time = 11
+
+Time = 11.5
+
+Time = 12
+
+Time = 12.5
+
+Time = 13
+
+Time = 13.5
+
+Time = 14
+
+Time = 14.5
+
+Time = 15
+
+Time = 15.5
+
+Time = 16
+
+Time = 16.5
+
+Time = 17
+
+Time = 17.5
+
+Time = 18
+
+Time = 18.5
+
+Time = 19
+
+Time = 19.5
+
+Time = 20
+
+Time = 20.5
+
+Time = 21
+
+Time = 21.5
+
+Time = 22
+
+Time = 22.5
+
+Time = 23
+
+Time = 23.5
+
+Time = 24
+
+Time = 24.5
+
+Time = 25
+
+Time = 25.5
+
+Time = 26
+
+Time = 26.5
+
+Time = 27
+
+Time = 27.5
+
+Time = 28
+
+Time = 28.5
+
+Time = 29
+
+Time = 29.5
+
+Time = 30
+
+Time = 30.5
+
+Time = 31
+
+Time = 31.5
+
+Time = 32
+
+Time = 32.5
+
+Time = 33
+
+Time = 33.5
+
+Time = 34
+
+Time = 34.5
+
+Time = 35
+
+Time = 35.5
+
+Time = 36
+
+Time = 36.5
+
+Time = 37
+
+Time = 37.5
+
+Time = 38
+
+Time = 38.5
+
+Time = 39
+
+Time = 39.5
+
+Time = 40
+
+Time = 40.5
+
+Time = 41
+
+Time = 41.5
+
+Time = 42
+
+Time = 42.5
+
+Time = 43
+
+Time = 43.5
+
+Time = 44
+
+Time = 44.5
+
+Time = 45
+
+Time = 45.5
+
+Time = 46
+
+Time = 46.5
+
+Time = 47
+
+Time = 47.5
+
+Time = 48
+
+Time = 48.5
+
+Time = 49
+
+Time = 49.5
+
+Time = 50
+
+Time = 50.5
+
+Time = 51
+
+Time = 51.5
+
+Time = 52
+
+Time = 52.5
+
+Time = 53
+
+Time = 53.5
+
+Time = 54
+
+Time = 54.5
+
+Time = 55
+
+Time = 55.5
+
+Time = 56
+
+Time = 56.5
+
+Time = 57
+
+Time = 57.5
+
+Time = 58
+
+Time = 58.5
+
+Time = 59
+
+Time = 59.5
+
+Time = 60
+
+Time = 60.5
+
+Time = 61
+
+Time = 61.5
+
+Time = 62
+
+Time = 62.5
+
+Time = 63
+
+Time = 63.5
+
+Time = 64
+
+Time = 64.5
+
+Time = 65
+
+Time = 65.5
+
+Time = 66
+
+Time = 66.5
+
+Time = 67
+
+Time = 67.5
+
+Time = 68
+
+Time = 68.5
+
+Time = 69
+
+Time = 69.5
+
+Time = 70
+
+Time = 70.5
+
+Time = 71
+
+Time = 71.5
+
+Time = 72
+
+Time = 72.5
+
+Time = 73
+
+Time = 73.5
+
+Time = 74
+
+Time = 74.5
+
+Time = 75
+
+Time = 75.5
+
+Time = 76
+
+Time = 76.5
+
+Time = 77
+
+Time = 77.5
+
+Time = 78
+
+Time = 78.5
+
+Time = 79
+
+Time = 79.5
+
+Time = 80
+
+Time = 80.5
+
+Time = 81
+
+Time = 81.5
+
+Time = 82
+
+Time = 82.5
+
+Time = 83
+
+Time = 83.5
+
+Time = 84
+
+Time = 84.5
+
+Time = 85
+
+Time = 85.5
+
+Time = 86
+
+Time = 86.5
+
+Time = 87
+
+Time = 87.5
+
+Time = 88
+
+Time = 88.5
+
+Time = 89
+
+Time = 89.5
+
+Time = 90
+
+Time = 90.5
+
+Time = 91
+
+Time = 91.5
+
+Time = 92
+
+Time = 92.5
+
+Time = 93
+
+Time = 93.5
+
+Time = 94
+
+Time = 94.5
+
+Time = 95
+
+Time = 95.5
+
+Time = 96
+
+Time = 96.5
+
+Time = 97
+
+Time = 97.5
+
+Time = 98
+
+Time = 98.5
+
+Time = 99
+
+Time = 99.5
+
+Time = 100
+
+Time = 100.5
+
+Time = 101
+
+Time = 101.5
+
+Time = 102
+
+Time = 102.5
+
+Time = 103
+
+Time = 103.5
+
+Time = 104
+
+Time = 104.5
+
+Time = 105
+
+Time = 105.5
+
+Time = 106
+
+Time = 106.5
+
+Time = 107
+
+Time = 107.5
+
+Time = 108
+
+Time = 108.5
+
+Time = 109
+
+Time = 109.5
+
+Time = 110
+
+Time = 110.5
+
+Time = 111
+
+Time = 111.5
+
+Time = 112
+
+Time = 112.5
+
+Time = 113
+
+Time = 113.5
+
+Time = 114
+
+Time = 114.5
+
+Time = 115
+
+Time = 115.5
+
+Time = 116
+
+Time = 116.5
+
+Time = 117
+
+Time = 117.5
+
+Time = 118
+
+Time = 118.5
+
+Time = 119
+
+Time = 119.5
+
+Time = 120
+
+Time = 120.5
+
+Time = 121
+
+Time = 121.5
+
+Time = 122
+
+Time = 122.5
+
+Time = 123
+
+Time = 123.5
+
+Time = 124
+
+Time = 124.5
+
+Time = 125
+
+Time = 125.5
+
+Time = 126
+
+Time = 126.5
+
+Time = 127
+
+Time = 127.5
+
+Time = 128
+
+Time = 128.5
+
+Time = 129
+
+Time = 129.5
+
+Time = 130
+
+Time = 130.5
+
+Time = 131
+
+Time = 131.5
+
+Time = 132
+
+Time = 132.5
+
+Time = 133
+
+Time = 133.5
+
+Time = 134
+
+Time = 134.5
+
+Time = 135
+
+Time = 135.5
+
+Time = 136
+
+Time = 136.5
+
+Time = 137
+
+Time = 137.5
+
+Time = 138
+
+Time = 138.5
+
+Time = 139
+
+Time = 139.5
+
+Time = 140
+
+Time = 140.5
+
+Time = 141
+
+Time = 141.5
+
+Time = 142
+
+Time = 142.5
+
+Time = 143
+
+Time = 143.5
+
+Time = 144
+
+Time = 144.5
+
+Time = 145
+
+Time = 145.5
+
+Time = 146
+
+Time = 146.5
+
+Time = 147
+
+Time = 147.5
+
+Time = 148
+
+Time = 148.5
+
+Time = 149
+
+Time = 149.5
+
+Time = 150
+
+Time = 150.5
+
+Time = 151
+
+Time = 151.5
+
+Time = 152
+
+Time = 152.5
+
+Time = 153
+
+Time = 153.5
+
+Time = 154
+
+Time = 154.5
+
+Time = 155
+
+Time = 155.5
+
+Time = 156
+
+Time = 156.5
+
+Time = 157
+
+Time = 157.5
+
+Time = 158
+
+Time = 158.5
+
+Time = 159
+
+Time = 159.5
+
+Time = 160
+
+Time = 160.5
+
+Time = 161
+
+Time = 161.5
+
+Time = 162
+
+Time = 162.5
+
+Time = 163
+
+Time = 163.5
+
+Time = 164
+
+Time = 164.5
+
+Time = 165
+
+Time = 165.5
+
+Time = 166
+
+Time = 166.5
+
+Time = 167
+
+Time = 167.5
+
+Time = 168
+
+Time = 168.5
+
+Time = 169
+
+Time = 169.5
+
+Time = 170
+
+Time = 170.5
+
+Time = 171
+
+Time = 171.5
+
+Time = 172
+
+Time = 172.5
+
+Time = 173
+
+Time = 173.5
+
+Time = 174
+
+Time = 174.5
+
+Time = 175
+
+Time = 175.5
+
+Time = 176
+
+Time = 176.5
+
+Time = 177
+
+Time = 177.5
+
+Time = 178
+
+Time = 178.5
+
+Time = 179
+
+Time = 179.5
+
+Time = 180
+
+Time = 180.5
+
+Time = 181
+
+Time = 181.5
+
+Time = 182
+
+Time = 182.5
+
+Time = 183
+
+Time = 183.5
+
+Time = 184
+
+Time = 184.5
+
+Time = 185
+
+Time = 185.5
+
+Time = 186
+
+Time = 186.5
+
+Time = 187
+
+Time = 187.5
+
+Time = 188
+
+Time = 188.5
+
+Time = 189
+
+Time = 189.5
+
+Time = 190
+
+Time = 190.5
+
+Time = 191
+
+Time = 191.5
+
+Time = 192
+
+Time = 192.5
+
+Time = 193
+
+Time = 193.5
+
+Time = 194
+
+Time = 194.5
+
+Time = 195
+
+Time = 195.5
+
+Time = 196
+
+Time = 196.5
+
+Time = 197
+
+Time = 197.5
+
+Time = 198
+
+Time = 198.5
+
+Time = 199
+
+Time = 199.5
+
+Time = 200
+
+End
+

@@ -1,11 +1,15 @@
-version: '3.8'
-
 services:
   dev:
-    build: .
+    build:
+      context: .
+      args:
+        USER_UID: "${UID:-1000}"
+        USER_GID: "${GID:-1000}"
     image: microclimatefoam:dev
+    entrypoint: ""
+    command: ["/bin/bash"]
     volumes:
-      - ./src:/workspace/src
+      - .:/workspace
       - /tmp/.X11-unix:/tmp/.X11-unix  # X11 socket for ParaView GUI
     environment:
       - DISPLAY=${DISPLAY}  # Share host display
