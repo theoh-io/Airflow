@@ -9,7 +9,7 @@
 ## Phase 1 — Flow Solver Core (🚧 In Progress)
 - [ ] Add `createFields.H` to instantiate velocity, pressure, and turbulence fields.
 - [ ] Implement incompressible momentum equation (PISO/PIMPLE loop) with residual logging.
-- [ ] Provide consistent boundary-condition templates in `0/` for tutorial case.
+- [x] Provide consistent boundary-condition templates in `0/` for tutorial case (`cases/heatedCavity`).
 
 ## Phase 2 — Thermal Transport (🗓 Planned)
 - [ ] Introduce temperature scalar transport equation coupled to the flow solution.
@@ -17,7 +17,7 @@
 - [ ] Document energy-specific stabilisation / relaxation controls.
 
 ## Phase 3 — Verification & Tooling (🗓 Planned)
-- [ ] Add at least one tutorial case (e.g., canonical street canyon) with mesh and run scripts.
+- [x] Seed heated cavity tutorial (`cases/heatedCavity`) with mesh and run instructions.
 - [ ] Automate case regression inside the container (extend `test_env.sh`).
 - [ ] Add CI (GitHub Actions) to build Docker image, run `wmake`, and execute the tutorial case headless.
 

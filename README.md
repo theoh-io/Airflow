@@ -4,14 +4,14 @@ OpenFOAM 8 solver for microclimate simulations (wind, temperature around buildin
 
 ## Quick Start
 
-### Using Docker Compose
+### Using Docker Compose (recommended)
 ```bash
 # Build and start dev environment
-docker-compose up -d
-docker exec -it microclimatefoam-dev bash
+docker compose up -d
+docker compose exec dev bash
 
 # Inside container
-source /opt/openfoam/etc/bashrc
+source /opt/openfoam8/etc/bashrc
 cd /workspace/src/microClimateFoam
 wmake
 ```
@@ -25,7 +25,7 @@ docker build -t microclimatefoam:dev .
 docker run --rm -it -v $(pwd)/src:/workspace/src microclimatefoam:dev bash
 
 # Inside container
-source /opt/openfoam/etc/bashrc
+source /opt/openfoam8/etc/bashrc
 cd /workspace/src/microClimateFoam
 wmake
 ```
@@ -59,12 +59,12 @@ See `docs/roadmap.md` for the detailed checklist.
 
 1. **Start dev container**
    ```bash
-   docker compose up -d
+   docker compose up -d    # falls back to docker-compose if needed
    docker compose exec dev bash
    ```
 2. **Inside container**
    ```bash
-   source /opt/openfoam/etc/bashrc
+   source /opt/openfoam8/etc/bashrc
    cd /workspace/src/microClimateFoam
    wmake
    ```
@@ -76,14 +76,53 @@ See `docs/roadmap.md` for the detailed checklist.
 
 > `test_env.sh` is written to run inside the container root (`/workspace`). It suppresses the OpenFOAM welcome banner so CI logs stay readable.
 
+### WSL / Docker Desktop workaround
+
+If Docker Desktop integration with WSL isn’t enabled, `docker compose` and bind mounts like `-v $(pwd):/workspace` may fail. Until integration is fixed you can stream the case into the container, build, and run everything from a temporary directory:
+
+```bash
+# from repo root on WSL
+tar -cf - src cases/heatedCavity | \
+docker run --rm --entrypoint "" -i microclimatefoam:dev bash -lc '
+  mkdir -p /tmp/workdir && cd /tmp/workdir
+  tar -xf -
+  source /opt/openfoam8/etc/bashrc
+  cd src/microClimateFoam && wmake
+  cd /tmp/workdir/cases/heatedCavity
+  blockMesh
+  microClimateFoam
+'
+```
+
+This keeps the host filesystem read-only, so logging happens inside the container (e.g., `/tmp/workdir/cases/heatedCavity/log.microClimateFoam`). Copy any artifacts out before the container exits if you need them.
+
 ## Documentation & Next Steps
 
 - `docs/roadmap.md`: canonical tracker for phases and tasks.
 - Upcoming work:
   - implement `createFields.H` and the incompressible momentum loop
   - add temperature transport with optional buoyancy
-  - ship at least one tutorial case plus run instructions
+  - fix Docker Desktop ↔ WSL integration so `docker compose` and bind mounts work without the tar workaround
   - extend test scripts to execute the tutorial case and capture residuals
   - document ParaView/X11 setup for Linux, macOS, and WSL2 users
 
 Contributions should update both the roadmap and this section so users can quickly tell what’s done versus planned.
+
+## Heated Cavity Tutorial Case
+
+A validation case that mirrors `hotRoom` from `buoyantBoussinesqSimpleFoam` lives in `cases/heatedCavity`.
+
+Inside the dev container:
+
+```bash
+cd /workspace/cases/heatedCavity
+blockMesh
+microClimateFoam
+```
+
+Key features:
+- 1×1×0.01 m cavity mesh (40×40×1 cells) with `empty` front/back to approximate 2D.
+- Hot wall (`315 K`) on the left, cold wall (`285 K`) on the right, adiabatic top/bottom.
+- Laminar, transient configuration with Boussinesq buoyancy parameters in `constant/transportProperties`.
+
+Use this case to iterate on solver coupling between `U`, `p`, and `T`. Update the roadmap once the solver reproduces the expected buoyant plume.
