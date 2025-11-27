@@ -7,7 +7,7 @@
 #   ./scripts/run_case.sh <case-path> [solver-name] [solver-args...]
 #
 # Examples:
-#   ./scripts/run_case.sh cases/heatedCavity
+#   ./scripts/run_case.sh custom_cases/heatedCavity
 #   ./scripts/run_case.sh cases/customCase pisoFoam -- -parallel
 #
 
@@ -26,13 +26,13 @@ Options:
   -h, --help           Show this help
 
 Positional arguments:
-  case-path            Case directory relative to repo root (e.g. cases/heatedCavity)
+  case-path            Case directory relative to repo root (e.g. custom_cases/heatedCavity or cases/[tutorialCase])
   solver               Solver executable (default: microClimateFoam)
   -- solver-args       Everything after '--' is passed directly to the solver
 
 Examples:
-  ./scripts/run_case.sh cases/heatedCavity
-  ./scripts/run_case.sh -p 4 cases/heatedCavity
+  ./scripts/run_case.sh custom_cases/heatedCavity
+  ./scripts/run_case.sh -p 4 custom_cases/heatedCavity
   ./scripts/run_case.sh cases/myCase buoyantBoussinesqSimpleFoam -- -parallel
 EOF
 }

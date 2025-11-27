@@ -6,7 +6,7 @@ Usage:
     python scripts/postprocess/extract_stats.py <case-directory> [time-directory]
 
 Example:
-    python scripts/postprocess/extract_stats.py cases/heatedCavity 200
+    python scripts/postprocess/extract_stats.py custom_cases/heatedCavity 200
 """
 
 import sys

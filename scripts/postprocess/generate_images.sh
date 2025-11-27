@@ -6,7 +6,7 @@
 #   ./scripts/postprocess/generate_images.sh <case-directory> [time-directory] [options]
 #
 # Example:
-#   ./scripts/postprocess/generate_images.sh cases/heatedCavity 200
+#   ./scripts/postprocess/generate_images.sh custom_cases/heatedCavity 200
 #
 
 set -euo pipefail

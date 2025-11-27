@@ -9,7 +9,7 @@ Usage:
     python scripts/postprocess/plot_fields.py <case-directory> [time-directory]
 
 Example:
-    python scripts/postprocess/plot_fields.py cases/heatedCavity 200
+    python scripts/postprocess/plot_fields.py custom_cases/heatedCavity 200
 """
 
 import sys

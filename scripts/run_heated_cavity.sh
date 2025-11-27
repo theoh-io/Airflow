@@ -17,7 +17,7 @@ docker compose run --rm dev bash -lc "
   set -e
   cd /workspace/src/microClimateFoam
   wmake
-  cd /workspace/cases/heatedCavity
+  cd /workspace/custom_cases/heatedCavity
   rm -f log.microClimateFoam
   blockMesh
   microClimateFoam | tee log.microClimateFoam

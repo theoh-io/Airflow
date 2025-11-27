@@ -37,36 +37,38 @@
   - [x] Adaptive mesh density adjustment for optimal vector visualization
   - [x] Works automatically across different test cases and configurations
 
-## Phase 5 — Multi-Solver Integration (🔄 IN PROGRESS)
-- [ ] Clone and integrate `urbanMicroclimateFoam` solver:
-  - [ ] Clone repository: `git clone https://github.com/OpenFOAM-BuildingPhysics/urbanMicroclimateFoam.git`
-  - [ ] Checkout OpenFOAM 8 tag: `git checkout tags/of-org_v8.0`
-  - [ ] Integrate into `src/urbanMicroclimateFoam/`
-  - [ ] Ensure `./Allwmake` builds successfully in Docker environment
-  - [ ] Document build requirements and dependencies
-- [ ] Reorganize case structure:
-  - [ ] Rename `cases/` to `custom_cases/` (for custom/validation cases)
-  - [ ] Clone tutorial cases: `git clone https://github.com/OpenFOAM-BuildingPhysics/urbanMicroclimateFoam-tutorials.git`
-  - [ ] Checkout OpenFOAM 8 tag: `git checkout tags/of-org_v8.0`
-  - [ ] Integrate tutorial cases into project structure
-  - [ ] Organize cases by solver or category
-- [ ] Update build system for multiple solvers:
-  - [ ] Create `scripts/build_all_solvers.sh` to build all solvers
-  - [ ] Update `wmake` workflow to support multiple solvers
-  - [ ] Ensure both solvers can coexist and build independently
-- [ ] Update helper scripts:
-  - [ ] Enhance `run_case.sh` to auto-detect solver from case metadata
-  - [ ] Create `scripts/list_cases.sh` to show available cases with solver info
-  - [ ] Update case runner scripts for multi-solver support
+## Phase 5 — Multi-Solver Integration (✅ Done)
+- [x] Clone and integrate `urbanMicroclimateFoam` solver:
+  - [x] Clone repository: `git clone https://github.com/OpenFOAM-BuildingPhysics/urbanMicroclimateFoam.git`
+  - [x] Checkout OpenFOAM 8 tag: `git checkout tags/of-org_v8.0`
+  - [x] Integrate into `src/urbanMicroclimateFoam/`
+  - [x] Ensure `./Allwmake` builds successfully in Docker environment
+  - [x] Document build requirements and dependencies
+- [x] Reorganize case structure:
+  - [x] Rename `cases/` to `custom_cases/` (for custom/validation cases)
+  - [x] Clone tutorial cases: `git clone https://github.com/OpenFOAM-BuildingPhysics/urbanMicroclimateFoam-tutorials.git`
+  - [x] Checkout OpenFOAM 8 tag: `git checkout tags/of-org_v8.0`
+  - [x] Integrate tutorial cases into project structure
+  - [x] Organize cases by solver or category
+- [x] Update build system for multiple solvers:
+  - [x] Create `scripts/build_all_solvers.sh` to build all solvers
+  - [x] Support both `Allwmake` (urbanMicroclimateFoam) and `wmake` (microClimateFoam)
+  - [x] Ensure both solvers can coexist and build independently
+- [x] Update helper scripts:
+  - [x] Update `run_case.sh` examples and help text
+  - [x] Create `scripts/list_cases.sh` to show available cases with solver info
+  - [x] Update all case runner scripts for multi-solver support
+  - [x] Update all test scripts to use `custom_cases/`
 - [ ] Update CI/CD:
   - [ ] Build all solvers in CI pipeline
   - [ ] Test cases for each solver
   - [ ] Matrix strategy for multiple solvers/cases
-- [ ] Documentation:
-  - [ ] Solver comparison table (features, use cases)
-  - [ ] Case catalog with descriptions and solver requirements
-  - [ ] Update README with multi-solver architecture
-  - [ ] Solver-specific documentation sections
+- [x] Documentation:
+  - [x] Case catalog with descriptions and solver requirements
+  - [x] Update README with multi-solver architecture
+  - [x] Integration notes document created
+  - [ ] Solver comparison table (features, use cases) - TODO
+  - [ ] Solver-specific documentation sections - TODO
 
 ## Phase 6 — Case Management & Standardization (PLANNED)
 - [ ] Case metadata system:

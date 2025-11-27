@@ -46,17 +46,23 @@ wmake
 ├── Dockerfile              # OpenFOAM 8 + ParaView 5.6.0 container
 ├── docker-compose.yml      # Docker Compose configuration
 ├── src/
-│   ├── microClimateFoam/   # Custom solver (incompressible flow + thermal transport)
+│   ├── microClimateFoam/          # Custom solver (wmake build)
 │   │   ├── microClimateFoam.C
 │   │   └── Make/
-│   └── urbanMicroclimateFoam/  # urbanMicroclimateFoam solver (to be integrated)
+│   └── urbanMicroclimateFoam/     # urbanMicroclimateFoam solver (Allwmake build)
 │       └── (cloned from OpenFOAM-BuildingPhysics/urbanMicroclimateFoam)
-├── custom_cases/           # Custom validation/test cases
-│   └── heatedCavity/       # microClimateFoam validation case
-├── cases/                  # Tutorial cases (from urbanMicroclimateFoam-tutorials)
-│   └── (cloned from OpenFOAM-BuildingPhysics/urbanMicroclimateFoam-tutorials)
-├── scripts/                # Helper scripts for building, running, testing
-└── docs/                   # Documentation
+├── custom_cases/                  # Custom validation/test cases
+│   └── heatedCavity/             # microClimateFoam validation case
+├── cases/                         # Tutorial cases (from urbanMicroclimateFoam-tutorials)
+│   ├── streetCanyon_CFD/         # Street canyon CFD
+│   ├── streetCanyon_CFDHAM/      # Street canyon with HAM
+│   ├── windAroundBuildings_CFDHAM/ # Wind around buildings
+│   └── ... (6 tutorial cases total)
+├── scripts/                       # Helper scripts
+│   ├── build_all_solvers.sh      # Build all solvers
+│   ├── list_cases.sh             # List available cases
+│   └── ...
+└── docs/                          # Documentation
 ```
 
 ## Status & Roadmap
@@ -66,7 +72,7 @@ wmake
 - ✅ **Phase 2 – Thermal Transport**: Temperature transport equation with Boussinesq buoyancy coupling implemented and tested.
 - ✅ **Phase 3 – Verification & Tooling**: Automated regression testing and CI (GitHub Actions) implemented.
 - ✅ **Phase 4 – Visualization & UX**: ParaView setup documentation, post-processing scripts, and visualization tools implemented.
-- 🔄 **Phase 5 – Multi-Solver Integration**: Integrating `urbanMicroclimateFoam` solver and tutorial cases (in progress).
+- ✅ **Phase 5 – Multi-Solver Integration**: `urbanMicroclimateFoam` solver and tutorial cases integrated.
 
 See `docs/roadmap.md` for the detailed checklist.
 
@@ -125,8 +131,11 @@ For other cases, use the flexible helper:
 # Run in parallel mode (auto-creates decomposeParDict if missing)
 ./scripts/run_case.sh -p 4 custom_cases/heatedCavity
 
-# Run a case with a different solver
-./scripts/run_case.sh -n -B cases/tutorialCase urbanMicroclimateFoam
+# Run a tutorial case with urbanMicroclimateFoam
+./scripts/run_case.sh -n -B cases/streetCanyon_CFD urbanMicroclimateFoam
+
+# List all available cases
+./scripts/list_cases.sh
 
 # Skip wmake, skip blockMesh, and run another solver with custom args
 ./scripts/run_case.sh -n -B custom_cases/myCase buoyantBoussinesqSimpleFoam -- -parallel
@@ -135,9 +144,9 @@ For other cases, use the flexible helper:
 ./scripts/run_case.sh -p 2 -R custom_cases/myCase
 ```
 
-> **Note:** After Phase 5 integration, cases will be organized as:
-> - `custom_cases/` - Custom validation/test cases (e.g., `heatedCavity`)
-> - `cases/` - Tutorial cases from `urbanMicroclimateFoam-tutorials`
+**Case Organization:**
+- `custom_cases/` - Custom validation/test cases (e.g., `heatedCavity` for microClimateFoam)
+- `cases/` - Tutorial cases from `urbanMicroclimateFoam-tutorials` (6 cases available)
 
 **Features:**
 - Automatically runs `checkMesh` after `blockMesh` to validate mesh quality
@@ -231,11 +240,40 @@ python scripts/postprocess/plot_fields.py cases/[tutorialCase] [time]
 
 Full details in `docs/visualization.md`.
 
+## Multi-Solver Architecture
+
+This project integrates multiple OpenFOAM solvers for microclimate simulations:
+
+- **`microClimateFoam`**: Custom solver for incompressible flow with thermal transport and Boussinesq buoyancy
+  - Build: `wmake` (standard OpenFOAM build)
+  - Cases: `custom_cases/heatedCavity/`
+  
+- **`urbanMicroclimateFoam`**: Advanced solver from OpenFOAM-BuildingPhysics with extended urban microclimate capabilities
+  - Build: `./Allwmake` (custom build system)
+  - Cases: `cases/streetCanyon_*`, `cases/windAroundBuildings_*` (6 tutorial cases)
+
+**Build all solvers:**
+```bash
+./scripts/build_all_solvers.sh
+```
+
+**List available cases:**
+```bash
+./scripts/list_cases.sh
+```
+
+**Run a tutorial case:**
+```bash
+./scripts/run_case.sh cases/streetCanyon_CFD urbanMicroclimateFoam
+```
+
+See `docs/roadmap.md` for integration status and `docs/INTEGRATION_NOTES.md` for detailed integration information.
+
 ## Documentation & Next Steps
 
 - `docs/roadmap.md`: canonical tracker for phases and tasks.
 - `docs/visualization.md`: complete visualization guide with platform-specific instructions.
-- **Phase 5 In Progress**: Multi-solver integration with `urbanMicroclimateFoam` and tutorial cases
+- **Phase 5 Complete**: Multi-solver integration with `urbanMicroclimateFoam` and tutorial cases
 - **Future enhancements** (see `docs/roadmap.md`):
   - Case management and standardization (Phase 6)
   - Solver comparison and benchmarking (Phase 7)

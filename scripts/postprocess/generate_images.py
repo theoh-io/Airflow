@@ -17,8 +17,8 @@ Options:
     --fields FIELDS    Comma-separated list of fields to visualize (default: T,U,p)
 
 Example:
-    python scripts/postprocess/generate_images.py cases/heatedCavity 200
-    python scripts/postprocess/generate_images.py cases/heatedCavity 200 --output-dir results/images
+    python scripts/postprocess/generate_images.py custom_cases/heatedCavity 200
+    python scripts/postprocess/generate_images.py custom_cases/heatedCavity 200 --output-dir results/images
 """
 
 import sys
