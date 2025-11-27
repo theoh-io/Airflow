@@ -85,9 +85,19 @@ See `docs/roadmap.md` for the detailed checklist.
 
 > `test_env.sh` is written to run inside the container root (`/workspace`). It suppresses the OpenFOAM welcome banner so CI logs stay readable.
 
+### Heated Cavity One-Liner
+
+To compile the solver, regenerate the heated cavity mesh, and run the tutorial case in one go:
+
+```bash
+./scripts/run_heated_cavity.sh
+```
+
+The script uses `docker compose run dev` under the hood and writes the solver log to `cases/heatedCavity/log.microClimateFoam`.
+
 ### WSL / Docker Desktop fallback
 
-The compose workflow should now work out-of-the-box (bind mounting the entire repo at `/workspace`). If Docker Desktop integration ever regresses, you can still stream the necessary directories into a short-lived container:
+Compose should now work out of the box (bind mounting the entire repo at `/workspace`). If Docker Desktop integration ever regresses, you can still stream the necessary directories into a short-lived container:
 
 ```bash
 tar -cf - src cases/heatedCavity | \
