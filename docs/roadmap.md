@@ -21,10 +21,10 @@
 - [x] Automate case regression inside the container (extend `test_env.sh`).
 - [x] Add CI (GitHub Actions) to build Docker image, run `wmake`, and execute the tutorial case headless.
 
-## Phase 4 — Visualization & UX (🗓 Planned)
-- [ ] Document ParaView / X11 setup for Linux, macOS, and WSL2.
-- [ ] Provide ParaView state files for standard plots (wind vectors, temperature slices).
-- [ ] Package post-processing scripts (Python or `foamToVTK`) for reproducible figures.
+## Phase 4 — Visualization & UX (✅ Done)
+- [x] Document ParaView / X11 setup for Linux, macOS, and WSL2.
+- [x] Provide ParaView state files for standard plots (wind vectors, temperature slices) - see `docs/paraview/README.md`.
+- [x] Package post-processing scripts (Python scripts for field extraction and visualization setup).
 
 > Update this roadmap as phases complete or tasks evolve so that contributors have a single source of truth.
 

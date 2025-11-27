@@ -60,7 +60,7 @@ wmake
 - ✅ **Phase 1 – Flow Solver Core**: Incompressible momentum equation with PISO loop implemented and tested.
 - ✅ **Phase 2 – Thermal Transport**: Temperature transport equation with Boussinesq buoyancy coupling implemented and tested.
 - ✅ **Phase 3 – Verification & Tooling**: Automated regression testing and CI (GitHub Actions) implemented.
-- 🚧 **Phase 4 – Visualization & UX**: ParaView guidance and post-processing scripts (next priority).
+- ✅ **Phase 4 – Visualization & UX**: ParaView setup documentation, post-processing scripts, and visualization tools implemented.
 
 See `docs/roadmap.md` for the detailed checklist.
 
@@ -155,14 +155,58 @@ The project includes GitHub Actions CI (`.github/workflows/ci.yml`) that automat
 
 The CI runs on Ubuntu latest and tests the complete workflow from compilation to case execution. Check the [Actions tab](https://github.com/your-repo/actions) in your GitHub repository to see CI status.
 
+## Visualization
+
+See `docs/visualization.md` for complete visualization setup instructions.
+
+### Quick Start
+
+1. **Create ParaView case file**:
+   ```bash
+   ./scripts/create_foam_file.sh cases/heatedCavity
+   ```
+
+2. **Start ParaView** (Linux example):
+   ```bash
+   xhost +local:docker
+   docker compose run --rm dev paraview
+   ```
+
+3. **Open the case**:
+   - File → Open → `cases/heatedCavity/heatedCavity.foam`
+
+### Post-Processing Scripts
+
+**Extract field statistics**:
+```bash
+python scripts/postprocess/extract_stats.py cases/heatedCavity 200
+```
+
+**Generate visualization setup**:
+```bash
+python scripts/postprocess/plot_fields.py cases/heatedCavity 200
+```
+
+This creates a ParaView Python script for automated visualization.
+
+### Platform-Specific Setup
+
+- **Linux**: X11 forwarding (see `docs/visualization.md`)
+- **macOS**: XQuartz installation and configuration
+- **WSL2**: VcXsrv or X410 setup
+
+Full details in `docs/visualization.md`.
+
 ## Documentation & Next Steps
 
 - `docs/roadmap.md`: canonical tracker for phases and tasks.
-- **Phase 3 Complete**: Automated regression testing via `test_env.sh` and CI via GitHub Actions are now in place. The test suite validates compilation, mesh generation, solver execution, and output verification.
-- Upcoming work:
-  - document ParaView/X11 setup for Linux, macOS, and WSL2 users (Phase 4)
-  - provide ParaView state files for standard visualizations (Phase 4)
-  - package post-processing scripts for reproducible figures (Phase 4)
+- `docs/visualization.md`: complete visualization guide with platform-specific instructions.
+- **All Phases Complete**: The solver is fully functional with flow, thermal transport, automated testing, and visualization tools.
+- Future enhancements:
+  - Additional turbulence models
+  - Advanced boundary conditions
+  - More tutorial cases
+  - Performance optimizations
 
 Contributions should update both the roadmap and this section so users can quickly tell what’s done versus planned.
 
