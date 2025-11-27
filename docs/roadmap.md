@@ -20,6 +20,12 @@
 - [x] Seed heated cavity tutorial (`cases/heatedCavity`) with mesh and run instructions.
 - [x] Automate case regression inside the container (extend `test_env.sh`).
 - [x] Add CI (GitHub Actions) to build Docker image, run `wmake`, and execute the tutorial case headless.
+- [x] Comprehensive testing suite:
+  - [x] Full simulation test (`test_full.sh`) - runs to endTime with field validation
+  - [x] Visualization testing - automated image generation and validation
+  - [x] Field statistics validation - temperature and velocity range checks
+  - [x] Image validation - PNG structure and file size verification
+  - [x] Parallel execution test (`test_parallel.sh`) - serial vs parallel comparison
 
 ## Phase 4 — Visualization & UX (✅ Done)
 - [x] Document ParaView / X11 setup for Linux, macOS, and WSL2.

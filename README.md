@@ -79,17 +79,22 @@ See `docs/roadmap.md` for the detailed checklist.
    ```
 3. **Test environment**
    ```bash
-   ./test_env.sh          # Full regression test: compilation, mesh generation, solver execution, output verification
+   ./test_env.sh          # Quick regression test: compilation, mesh generation, short solver run (5 steps)
+   ./test_full.sh         # Full test: complete simulation to endTime, field validation, visualization generation
+   ./test_parallel.sh     # Parallel execution test: serial vs parallel comparison
    ./test_docker.sh       # Lighter-weight smoke test
    ```
 
-> `test_env.sh` runs a complete regression test including:
-> - Solver compilation
-> - Binary verification
-> - Heated cavity case: mesh generation (`blockMesh`), quality check (`checkMesh`), solver execution (5 time steps), and output file verification (U, p, T, phi fields)
-> - Log analysis for fatal errors
+> **Test Scripts:**
+> - `test_env.sh`: Quick regression test (5 time steps) - fast feedback for development
+> - `test_full.sh`: Comprehensive test including:
+>   - Full simulation run to `endTime`
+>   - Field statistics validation (temperature, velocity ranges)
+>   - Visualization image generation and validation
+>   - PNG file structure verification
+> - `test_parallel.sh`: Parallel execution test (serial vs parallel comparison)
 > 
-> The script is designed to run inside the container and is used by CI for automated testing.
+> All scripts are designed to run inside the container and are used by CI for automated testing.
 
 ### Heated Cavity One-Liner
 
