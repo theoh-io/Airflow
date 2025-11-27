@@ -100,12 +100,24 @@ The script uses `docker compose run dev` under the hood and writes the solver lo
 For other cases, use the flexible helper:
 
 ```bash
-# Build solver, run blockMesh (if present), and launch microClimateFoam
+# Build solver, run blockMesh + checkMesh (if present), and launch microClimateFoam
 ./scripts/run_case.sh cases/heatedCavity
+
+# Run in parallel mode (auto-creates decomposeParDict if missing)
+./scripts/run_case.sh -p 4 cases/heatedCavity
 
 # Skip wmake, skip blockMesh, and run another solver with custom args
 ./scripts/run_case.sh -n -B cases/myCase buoyantBoussinesqSimpleFoam -- -parallel
+
+# Parallel run without reconstruction (keeps decomposed results)
+./scripts/run_case.sh -p 2 -R cases/myCase
 ```
+
+**Features:**
+- Automatically runs `checkMesh` after `blockMesh` to validate mesh quality
+- Parallel run support: `-p [N]` runs `decomposePar`, solver with `-parallel`, and `reconstructPar`
+- Auto-creates `system/decomposeParDict` if missing (defaults to 4 processors)
+- Use `-R` to skip reconstruction and keep decomposed results
 
 Logs are written to `log.<solver>` inside the case directory. Run `./scripts/run_case.sh --help` for all options.
 

@@ -20,6 +20,9 @@ Usage: run_case.sh [options] <case-path> [solver [-- solver-args]]
 Options:
   -n, --no-build       Skip wmake (assumes solver already built)
   -B, --no-blockMesh   Skip blockMesh step
+  -p, --parallel [N]   Run in parallel mode (decomposePar, solver -parallel, reconstructPar)
+                        Optional N specifies number of processors (default: auto-detect)
+  -R, --no-reconstruct Skip reconstructPar after parallel run
   -h, --help           Show this help
 
 Positional arguments:
@@ -29,12 +32,16 @@ Positional arguments:
 
 Examples:
   ./scripts/run_case.sh cases/heatedCavity
+  ./scripts/run_case.sh -p 4 cases/heatedCavity
   ./scripts/run_case.sh cases/myCase buoyantBoussinesqSimpleFoam -- -parallel
 EOF
 }
 
 NO_BUILD=0
 RUN_BLOCKMESH=1
+PARALLEL=0
+NPROCS=""
+NO_RECONSTRUCT=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -44,6 +51,19 @@ while [[ $# -gt 0 ]]; do
       ;;
     -B|--no-blockMesh)
       RUN_BLOCKMESH=0
+      shift
+      ;;
+    -p|--parallel)
+      PARALLEL=1
+      shift
+      # Check if next argument is a number (processor count)
+      if [[ $# -gt 0 && "$1" =~ ^[0-9]+$ ]]; then
+        NPROCS="$1"
+        shift
+      fi
+      ;;
+    -R|--no-reconstruct)
+      NO_RECONSTRUCT=1
       shift
       ;;
     -h|--help)
@@ -99,11 +119,13 @@ cat <<EOF
 ============================================================
  microClimateFoam - Case Runner
 ------------------------------------------------------------
- Case   : ${CASE_PATH}
- Solver : ${SOLVER}
- Build  : $([[ $NO_BUILD -eq 0 ]] && echo "wmake" || echo "skip")
- Mesh   : $([[ $RUN_BLOCKMESH -eq 1 ]] && echo "blockMesh" || echo "skip")
- Args   : ${SOLVER_ARGS[*]:-(none)}
+ Case        : ${CASE_PATH}
+ Solver      : ${SOLVER}
+ Build       : $([[ $NO_BUILD -eq 0 ]] && echo "wmake" || echo "skip")
+ Mesh        : $([[ $RUN_BLOCKMESH -eq 1 ]] && echo "blockMesh + checkMesh" || echo "skip")
+ Parallel    : $([[ $PARALLEL -eq 1 ]] && echo "yes${NPROCS:+ (${NPROCS} procs)}" || echo "no")
+ Reconstruct : $([[ $PARALLEL -eq 1 && $NO_RECONSTRUCT -eq 0 ]] && echo "yes" || echo "no")
+ Args        : ${SOLVER_ARGS[*]:-(none)}
 ============================================================
 EOF
 
@@ -114,7 +136,19 @@ if [[ ${#SOLVER_ARGS[@]} -gt 0 ]]; then
   done
 fi
 
-docker compose run --rm dev bash -lc "
+# Set number of processors for parallel runs
+if [[ ${PARALLEL} -eq 1 ]]; then
+  NP="${NPROCS:-4}"
+else
+  NP=""
+fi
+
+ENV_VARS=()
+if [[ -n "${NP}" ]]; then
+  ENV_VARS=(-e "NP=${NP}")
+fi
+
+docker compose run --rm "${ENV_VARS[@]}" dev bash -lc "
   source /opt/openfoam8/etc/bashrc
   set -e
   cd /workspace/src/microClimateFoam
@@ -124,8 +158,44 @@ docker compose run --rm dev bash -lc "
   cd /workspace/${CASE_PATH}
   if [[ ${RUN_BLOCKMESH} -eq 1 && -f constant/polyMesh/blockMeshDict ]]; then
     blockMesh
+    echo ''
+    echo 'Running checkMesh...'
+    checkMesh
+  fi
+  if [[ ${PARALLEL} -eq 1 ]]; then
+    echo ''
+    echo 'Decomposing mesh for parallel run...'
+    if [[ ! -f system/decomposeParDict ]]; then
+      NP_VAL=\${NP:-4}
+      cat > system/decomposeParDict <<EOFDICT
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      decomposeParDict;
+}
+numberOfSubdomains \${NP_VAL};
+method          simple;
+simpleCoeffs
+{
+    n               (\${NP_VAL} 1 1);
+    delta           0.001;
+}
+EOFDICT
+    fi
+    decomposePar -force
   fi
   rm -f log.${SOLVER}
-  ${SOLVER}${SOLVER_ARGS_STR} | tee log.${SOLVER}
+  if [[ ${PARALLEL} -eq 1 ]]; then
+    ${SOLVER} -parallel${SOLVER_ARGS_STR} | tee log.${SOLVER}
+  else
+    ${SOLVER}${SOLVER_ARGS_STR} | tee log.${SOLVER}
+  fi
+  if [[ ${PARALLEL} -eq 1 && ${NO_RECONSTRUCT} -eq 0 ]]; then
+    echo ''
+    echo 'Reconstructing parallel results...'
+    reconstructPar
+  fi
 "
 
