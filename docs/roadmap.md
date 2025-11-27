@@ -11,10 +11,10 @@
 - [x] Implement incompressible momentum equation (PISO loop) with residual logging.
 - [x] Provide consistent boundary-condition templates in `0/` for tutorial case (`cases/heatedCavity`).
 
-## Phase 2 — Thermal Transport (🗓 Planned)
-- [ ] Introduce temperature scalar transport equation coupled to the flow solution.
-- [ ] Support buoyancy via Boussinesq approximation (optional toggle).
-- [ ] Document energy-specific stabilisation / relaxation controls.
+## Phase 2 — Thermal Transport (✅ Done)
+- [x] Introduce temperature scalar transport equation coupled to the flow solution.
+- [x] Support buoyancy via Boussinesq approximation (integrated into momentum equation).
+- [x] Document energy-specific stabilisation / relaxation controls (via fvSolution relaxationFactors).
 
 ## Phase 3 — Verification & Tooling (🗓 Planned)
 - [x] Seed heated cavity tutorial (`cases/heatedCavity`) with mesh and run instructions.

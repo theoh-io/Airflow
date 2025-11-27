@@ -76,8 +76,7 @@ const dimensionedScalar TRef("TRef", dimTemperature, transportProperties);
 const dimensionedVector g("g", dimAcceleration, transportProperties);
 
 // Thermal diffusivity (alpha = k/(rho*Cp), simplified as constant for now)
-// For air at 300K: alpha ≈ 2.2e-5 m²/s
-const dimensionedScalar alpha("alpha", dimViscosity, transportProperties.lookupOrDefault("alpha", 2.2e-5));
+const dimensionedScalar alpha("alpha", dimViscosity, transportProperties);
 
 Info<< "Thermal properties:" << nl
     << "    rhoRef = " << rhoRef.value() << " kg/m³" << nl

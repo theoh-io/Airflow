@@ -28,6 +28,9 @@ int main(int argc, char *argv[])
             }
         }
 
+        // Solve temperature transport equation
+        #include "TEqn.H"
+
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"

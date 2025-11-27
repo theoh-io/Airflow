@@ -58,8 +58,8 @@ wmake
 
 - ✅ **Phase 0 – Environment & Skeleton**: Docker image, Compose workflow, and minimal solver build are working.
 - ✅ **Phase 1 – Flow Solver Core**: Incompressible momentum equation with PISO loop implemented and tested.
-- 🚧 **Phase 2 – Thermal Transport**: Coupled temperature solve and buoyancy models (next priority).
-- 🗓 **Phase 3 – Verification & Tooling**: Tutorial cases, automated regression, CI.
+- ✅ **Phase 2 – Thermal Transport**: Temperature transport equation with Boussinesq buoyancy coupling implemented and tested.
+- 🚧 **Phase 3 – Verification & Tooling**: Tutorial cases, automated regression, CI (next priority).
 - 🗓 **Phase 4 – Visualization & UX**: ParaView guidance and post-processing scripts.
 
 See `docs/roadmap.md` for the detailed checklist.
@@ -141,12 +141,12 @@ docker run --rm --entrypoint "" -i microclimatefoam:dev bash -lc '
 ## Documentation & Next Steps
 
 - `docs/roadmap.md`: canonical tracker for phases and tasks.
-- **Phase 1 Complete**: The solver now implements incompressible flow with PISO pressure-velocity coupling. Tested successfully with the heated cavity case.
+- **Phase 2 Complete**: The solver now implements coupled flow and thermal transport with Boussinesq buoyancy. The heated cavity case demonstrates natural convection with temperature-driven flow.
 - Upcoming work:
-  - add temperature transport equation with Boussinesq buoyancy coupling (Phase 2)
-  - extend test scripts to execute the tutorial case and capture residuals
-  - add CI (GitHub Actions) for automated builds and regression testing
-  - document ParaView/X11 setup for Linux, macOS, and WSL2 users
+  - extend test scripts to execute the tutorial case and capture residuals (Phase 3)
+  - add CI (GitHub Actions) for automated builds and regression testing (Phase 3)
+  - document ParaView/X11 setup for Linux, macOS, and WSL2 users (Phase 4)
+  - provide ParaView state files for standard visualizations (Phase 4)
 
 Contributions should update both the roadmap and this section so users can quickly tell what’s done versus planned.
 

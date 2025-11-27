@@ -15,4 +15,5 @@ rhoRef          [1 -3 0 0 0 0 0] 1.0;
 beta            [0 0 0 -1 0 0 0] 3e-03;   // Thermal expansion coefficient
 TRef            [0 0 0 1 0 0 0] 300;
 g               [0 1 -2 0 0 0 0] (0 -9.81 0);
+alpha           [0 2 -1 0 0 0 0] 2.2e-05; // Thermal diffusivity (m²/s)
 

@@ -6,12 +6,14 @@
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 
-// Solve the momentum equation
+// Solve the momentum equation with Boussinesq buoyancy
 fvVectorMatrix UEqn
 (
     fvm::ddt(U)
   + fvm::div(phi, U)
   - fvm::laplacian(nu, U)
+  ==
+    beta*g*(T - TRef)  // Boussinesq buoyancy term
 );
 
 UEqn.relax();
