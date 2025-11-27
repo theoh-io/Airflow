@@ -95,6 +95,20 @@ To compile the solver, regenerate the heated cavity mesh, and run the tutorial c
 
 The script uses `docker compose run dev` under the hood and writes the solver log to `cases/heatedCavity/log.microClimateFoam`.
 
+### Generic Case Runner
+
+For other cases, use the flexible helper:
+
+```bash
+# Build solver, run blockMesh (if present), and launch microClimateFoam
+./scripts/run_case.sh cases/heatedCavity
+
+# Skip wmake, skip blockMesh, and run another solver with custom args
+./scripts/run_case.sh -n -B cases/myCase buoyantBoussinesqSimpleFoam -- -parallel
+```
+
+Logs are written to `log.<solver>` inside the case directory. Run `./scripts/run_case.sh --help` for all options.
+
 ### WSL / Docker Desktop fallback
 
 Compose should now work out of the box (bind mounting the entire repo at `/workspace`). If Docker Desktop integration ever regresses, you can still stream the necessary directories into a short-lived container:
