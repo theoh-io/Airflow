@@ -157,7 +157,20 @@ docker compose run --rm "${ENV_VARS[@]}" dev bash -lc "
   fi
   cd /workspace/${CASE_PATH}
   if [[ ${RUN_BLOCKMESH} -eq 1 && -f constant/polyMesh/blockMeshDict ]]; then
-    blockMesh
+    # Check if mesh already exists and is up to date
+    if [ -f "constant/polyMesh/points" ]; then
+      # Check if blockMeshDict is newer than mesh (mesh needs regeneration)
+      if [ "constant/polyMesh/blockMeshDict" -nt "constant/polyMesh/points" ]; then
+        echo "Mesh exists but blockMeshDict is newer, regenerating mesh..."
+        blockMesh
+      else
+        echo "✓ Mesh already exists and is up to date (skipping generation)"
+      fi
+    else
+      # Mesh doesn't exist, generate it
+      echo "Generating mesh..."
+      blockMesh
+    fi
     echo ''
     echo 'Running checkMesh...'
     checkMesh

@@ -17,6 +17,12 @@ cd /workspace/src/microClimateFoam
 wmake
 ```
 
+> **Note on Build Persistence**: The `docker-compose.yml` mounts a `build/` directory to persist solver binaries across container runs. This means:
+> - Solver binaries are cached and only rebuilt when source files change
+> - The `build/` directory is automatically created and ignored by git
+> - Mesh files are also cached - scripts check if mesh exists before regenerating
+> - See `docs/BUILD_CACHING.md` for detailed information
+
 > The image aligns the container `openfoam` user with your host UID/GID so bind mounts stay writable. When building manually (without `docker compose build`), pass your IDs explicitly:
 > ```bash
 > docker build \
@@ -73,6 +79,7 @@ wmake
 - ✅ **Phase 3 – Verification & Tooling**: Automated regression testing and CI (GitHub Actions) implemented.
 - ✅ **Phase 4 – Visualization & UX**: ParaView setup documentation, post-processing scripts, and visualization tools implemented.
 - ✅ **Phase 5 – Multi-Solver Integration**: `urbanMicroclimateFoam` solver and tutorial cases integrated.
+- ✅ **Phase 5.1 – CI/CD Optimization**: Test suite optimized for quick validation (5-15 min), CI workflow updated, and documentation enhanced.
 
 See `docs/roadmap.md` for the detailed checklist.
 
@@ -91,34 +98,90 @@ See `docs/roadmap.md` for the detailed checklist.
    ```
 3. **Test environment**
    ```bash
-   ./test_env.sh          # Quick regression test: compilation, mesh generation, short solver run (5 steps)
+   ./test_env.sh          # Quick regression test: compilation, mesh generation, short solver run (12 steps)
    ./test_full.sh         # Full test: complete simulation to endTime, field validation, visualization generation
    ./test_parallel.sh     # Parallel execution test: serial vs parallel comparison
-   ./test_docker.sh       # Lighter-weight smoke test
    ```
 
 > **Test Scripts:**
-> - `test_env.sh`: Quick regression test (5 time steps) - fast feedback for development
-> - `test_full.sh`: Comprehensive test including:
->   - Full simulation run to `endTime`
+> - `test_env.sh`: Quick regression test (2 time steps) - fast feedback for development
+>   - Shows real-time solver output and progress
+>   - Monitors time step creation in real-time
+>   - **Quick sanity check**: Validates output at time 3600 (first time step)
+> - `test_full.sh`: Comprehensive test (separate from CI, for nightly/manual runs)
+>   - Full simulation run to `endTime` with verbose progress
+>   - Real-time monitoring of time directory creation
 >   - Field statistics validation (temperature, velocity ranges)
 >   - Visualization image generation and validation
 >   - PNG file structure verification
+>   - Note: Not run in main CI (too long), use for comprehensive validation
 > - `test_parallel.sh`: Parallel execution test (serial vs parallel comparison)
+> 
+> **Verbose Output:**
+> All test scripts now use `scripts/run_solver_verbose.sh` which provides:
+> - Real-time solver output (all lines shown as they occur)
+> - Background monitoring of time directory creation
+> - Progress indicators highlighting time steps and execution time
+> - Immediate notification when time steps are written
+> 
+> **Smart Build System:**
+> The build system (`scripts/build_all_solvers.sh`) now:
+> - Checks if source files have changed before rebuilding
+> - Skips rebuild if binary is up to date (faster test runs)
+> - Only rebuilds when necessary (source files newer than binary)
 > 
 > All scripts are designed to run inside the container and are used by CI for automated testing.
 
-### Heated Cavity One-Liner
+### Quick Start (Default: streetCanyon_CFD with urbanMicroclimateFoam)
 
-To compile the solver, regenerate the heated cavity mesh, and run the tutorial case in one go:
+The default solver is `urbanMicroclimateFoam` and the default test case is `streetCanyon_CFD`.
 
+**Build all solvers:**
 ```bash
-./scripts/run_heated_cavity.sh
+./scripts/build_all_solvers.sh
 ```
 
-The script uses `docker compose run dev` under the hood and writes the solver log to `custom_cases/heatedCavity/log.microClimateFoam`.
+**Run the default test case:**
+```bash
+# Quick validation (CI-optimized, 5-15 minutes) - RECOMMENDED
+./scripts/run_street_canyon.sh --quick-validation
 
-> **Note:** The `cases/` directory will be renamed to `custom_cases/` to make room for tutorial cases from `urbanMicroclimateFoam-tutorials`.
+# Quick test (12 time steps, 1-6 hours) - for local testing
+./scripts/run_street_canyon.sh --quick
+
+# Full simulation (24 time steps, 2-12+ hours)
+./scripts/run_street_canyon.sh --full
+
+# Using the test scripts
+./test_env.sh      # Quick validation (2 time steps, 5-15 min) - optimized for CI
+./test_full.sh     # Full simulation with visualization (separate from CI)
+
+# Or manually
+./scripts/run_case.sh cases/streetCanyon_CFD urbanMicroclimateFoam
+```
+
+**Generate visualizations:**
+```bash
+# After quick validation (deltaT=100s)
+./scripts/postprocess/generate_images.sh cases/streetCanyon_CFD 100   # 1 time step
+./scripts/postprocess/generate_images.sh cases/streetCanyon_CFD 200  # 2 time steps
+
+# After quick test (deltaT=3600s)
+./scripts/postprocess/generate_images.sh cases/streetCanyon_CFD 3600   # 1 time step
+./scripts/postprocess/generate_images.sh cases/streetCanyon_CFD 36000  # 10 time steps
+```
+
+See `docs/quick_start.md` for a complete workflow example.
+
+### Heated Cavity (microClimateFoam)
+
+To compile the microClimateFoam solver and run the heated cavity case:
+
+```bash
+./scripts/run_case.sh custom_cases/heatedCavity
+```
+
+This uses the generic case runner and writes the solver log to `custom_cases/heatedCavity/log.microClimateFoam`.
 
 ### Generic Case Runner
 
@@ -186,12 +249,16 @@ The CI runs on Ubuntu latest and tests the complete workflow from compilation to
 
 ## Visualization
 
-See `docs/visualization.md` for complete visualization setup instructions. For a quick reference, see `docs/visualization_quickref.md`.
+See `docs/visualization.md` for complete visualization setup instructions. For a quick start guide, see `docs/quick_start.md`.
 
 ### Quick Start
 
 1. **Create ParaView case file**:
    ```bash
+   # For default case (streetCanyon_CFD)
+   ./scripts/create_foam_file.sh cases/streetCanyon_CFD
+   
+   # For other cases
    ./scripts/create_foam_file.sh custom_cases/heatedCavity
    ```
 
@@ -202,7 +269,8 @@ See `docs/visualization.md` for complete visualization setup instructions. For a
    ```
 
 3. **Open the case**:
-   - File → Open → `custom_cases/heatedCavity/heatedCavity.foam` (or `cases/[tutorialCase]/[tutorialCase].foam`)
+   - File → Open → `cases/streetCanyon_CFD/streetCanyon_CFD.foam` (default)
+   - Or `custom_cases/heatedCavity/heatedCavity.foam` for microClimateFoam case
 
 ### Post-Processing Scripts
 
@@ -227,9 +295,9 @@ python scripts/postprocess/extract_stats.py cases/[tutorialCase] [time]
 
 **Generate visualization setup**:
 ```bash
-python scripts/postprocess/plot_fields.py custom_cases/heatedCavity 200
+python scripts/postprocess/extract_stats.py custom_cases/heatedCavity 200
 # Or for tutorial cases:
-python scripts/postprocess/plot_fields.py cases/[tutorialCase] [time]
+python scripts/postprocess/extract_stats.py cases/[tutorialCase] [time]
 ```
 
 ### Platform-Specific Setup
@@ -244,13 +312,14 @@ Full details in `docs/visualization.md`.
 
 This project integrates multiple OpenFOAM solvers for microclimate simulations:
 
+- **`urbanMicroclimateFoam`** (Default): Advanced solver from OpenFOAM-BuildingPhysics with extended urban microclimate capabilities
+  - Build: `./Allwmake` (custom build system)
+  - Cases: `cases/streetCanyon_*`, `cases/windAroundBuildings_*` (6 tutorial cases)
+  - Default test case: `cases/streetCanyon_CFD/`
+  
 - **`microClimateFoam`**: Custom solver for incompressible flow with thermal transport and Boussinesq buoyancy
   - Build: `wmake` (standard OpenFOAM build)
   - Cases: `custom_cases/heatedCavity/`
-  
-- **`urbanMicroclimateFoam`**: Advanced solver from OpenFOAM-BuildingPhysics with extended urban microclimate capabilities
-  - Build: `./Allwmake` (custom build system)
-  - Cases: `cases/streetCanyon_*`, `cases/windAroundBuildings_*` (6 tutorial cases)
 
 **Build all solvers:**
 ```bash
@@ -262,9 +331,12 @@ This project integrates multiple OpenFOAM solvers for microclimate simulations:
 ./scripts/list_cases.sh
 ```
 
-**Run a tutorial case:**
+**Run the default test case:**
 ```bash
 ./scripts/run_case.sh cases/streetCanyon_CFD urbanMicroclimateFoam
+# Or use the test scripts which use streetCanyon_CFD by default:
+./test_env.sh      # Quick test
+./test_full.sh     # Full test with visualization
 ```
 
 See `docs/roadmap.md` for integration status and `docs/INTEGRATION_NOTES.md` for detailed integration information.
@@ -273,6 +345,8 @@ See `docs/roadmap.md` for integration status and `docs/INTEGRATION_NOTES.md` for
 
 - `docs/roadmap.md`: canonical tracker for phases and tasks.
 - `docs/visualization.md`: complete visualization guide with platform-specific instructions.
+- `docs/BUILD_CACHING.md`: build and mesh caching system documentation.
+- `docs/quick_start.md`: quick start guide for running cases.
 - **Phase 5 Complete**: Multi-solver integration with `urbanMicroclimateFoam` and tutorial cases
 - **Future enhancements** (see `docs/roadmap.md`):
   - Case management and standardization (Phase 6)

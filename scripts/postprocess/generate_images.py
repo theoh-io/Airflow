@@ -718,8 +718,26 @@ def main():
             reader.EnablePatches = 1
         except AttributeError:
             pass
-        reader.MeshRegions = ['internalMesh']
-        reader.CellArrays = ['U', 'p', 'T']
+        
+        # Detect if this is a multi-region case
+        # Check for region directories in 0/
+        zero_dir = os.path.join(case_path, "0")
+        if os.path.isdir(zero_dir):
+            regions = [d for d in os.listdir(zero_dir) if os.path.isdir(os.path.join(zero_dir, d)) and d not in ['include', 'polyMesh']]
+            if regions:
+                # Multi-region case - use the first region (typically 'air')
+                region = regions[0]
+                print("Detected multi-region case, using region: {}".format(region))
+                reader.MeshRegions = [region]
+            else:
+                # Single region case
+                reader.MeshRegions = ['internalMesh']
+        else:
+            # Single region case
+            reader.MeshRegions = ['internalMesh']
+        
+        # Set arrays - urbanMicroclimateFoam uses h (enthalpy) in addition to T
+        reader.CellArrays = ['U', 'p', 'p_rgh', 'T', 'h']
         reader.PointArrays = []
         
         # Update pipeline information to get timesteps

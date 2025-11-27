@@ -1,8 +1,8 @@
 # Visualization Guide
 
-This guide explains how to visualize microClimateFoam results using ParaView, which is included in the Docker image.
+This guide explains how to visualize OpenFOAM results using ParaView, which is included in the Docker image.
 
-> **Quick Reference**: See `docs/visualization_quickref.md` for a condensed cheat sheet of common commands and workflows.
+> **Quick Start**: See `docs/quick_start.md` for a complete workflow example.
 
 ## ParaView Setup
 
@@ -150,7 +150,11 @@ Python scripts are available in `scripts/postprocess/` for automated analysis:
 ### Extract Field Statistics
 
 ```bash
-python scripts/postprocess/extract_stats.py custom_cases/heatedCavity
+# Default case (streetCanyon_CFD)
+python scripts/postprocess/extract_stats.py cases/streetCanyon_CFD 0
+
+# Other cases
+python scripts/postprocess/extract_stats.py custom_cases/heatedCavity 200
 # Or for tutorial cases:
 python scripts/postprocess/extract_stats.py cases/[tutorialCase]
 ```
@@ -167,6 +171,12 @@ This generates:
 
 ```bash
 # Using the wrapper script (recommended)
+# Default case (streetCanyon_CFD) - after running simulation
+./scripts/postprocess/generate_images.sh cases/streetCanyon_CFD 36000  # Early validation (10 time steps)
+./scripts/postprocess/generate_images.sh cases/streetCanyon_CFD 3600    # First time step
+./scripts/postprocess/generate_images.sh cases/streetCanyon_CFD 7200    # Second time step
+
+# Other cases
 ./scripts/postprocess/generate_images.sh custom_cases/heatedCavity 200
 # Or for tutorial cases:
 ./scripts/postprocess/generate_images.sh cases/[tutorialCase] [time]
@@ -174,11 +184,27 @@ This generates:
 # Or directly with pvpython
 docker compose run --rm dev bash -c "
   cd /workspace
+  # Default case
+  /opt/paraviewopenfoam56/bin/pvpython scripts/postprocess/generate_images.py cases/streetCanyon_CFD 0
+  
+  # Other cases
   /opt/paraviewopenfoam56/bin/pvpython scripts/postprocess/generate_images.py custom_cases/heatedCavity 200
 "
 ```
 
-This generates 4 standard images in `custom_cases/heatedCavity/images/` (or `cases/[tutorialCase]/images/`):
+**Complete workflow:**
+```bash
+# 1. Run the case
+./scripts/run_street_canyon.sh --quick
+
+# 2. Generate visualizations for early validation
+./scripts/postprocess/generate_images.sh cases/streetCanyon_CFD 36000
+
+# 3. View results
+ls -lh cases/streetCanyon_CFD/images/
+```
+
+This generates 4 standard images in `cases/streetCanyon_CFD/images/` (or `custom_cases/[caseName]/images/`):
 - `temperature_200.png` - Temperature contour slice with adaptive color range
 - `velocity_200.png` - Velocity vector field with adaptive scaling
 - `streamlines_200.png` - Streamline visualization
@@ -204,13 +230,15 @@ The script automatically adapts to different test cases:
 - Generating figures for reports/papers
 - Works automatically with different domain sizes, velocity ranges, and mesh densities
 
-### Generate Visualization Scripts
+### Extract Field Statistics
 
 ```bash
-python scripts/postprocess/plot_fields.py cases/heatedCavity
+# Extract statistics from case results
+python scripts/postprocess/extract_stats.py cases/streetCanyon_CFD 3600
+python scripts/postprocess/extract_stats.py custom_cases/heatedCavity 200
 ```
 
-Creates ParaView Python scripts for interactive visualization setup.
+Extracts min/max values, averages, and statistics from field files for analysis.
 
 ## Troubleshooting
 

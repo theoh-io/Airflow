@@ -37,7 +37,7 @@ git checkout tags/of-org_v8.0
 
 All scripts have been updated to support both `custom_cases/` and `cases/`:
 
-- ✅ `scripts/run_heated_cavity.sh` - Updated to `custom_cases/heatedCavity`
+- ✅ `scripts/run_case.sh` - Generic case runner supports all cases (replaces run_heated_cavity.sh)
 - ✅ `scripts/run_case.sh` - Updated examples and help text
 - ✅ `scripts/create_foam_file.sh` - Updated example paths
 - ✅ `test_env.sh`, `test_full.sh`, `test_parallel.sh` - Updated to `custom_cases/heatedCavity`

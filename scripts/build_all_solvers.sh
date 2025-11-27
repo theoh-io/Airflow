@@ -23,6 +23,34 @@ else
     RUN_IN_DOCKER=false
 fi
 
+needs_rebuild() {
+    local solver_dir="$1"
+    local solver_name=$(basename "$solver_dir")
+    local binary_path="$FOAM_USER_APPBIN/${solver_name}"
+    
+    # If binary doesn't exist, needs rebuild
+    if [ ! -f "$binary_path" ]; then
+        return 0  # true - needs rebuild
+    fi
+    
+    # Check if any source files are newer than the binary
+    local binary_mtime=$(stat -c %Y "$binary_path" 2>/dev/null || stat -f %m "$binary_path" 2>/dev/null || echo "0")
+    
+    # Check source files (common patterns)
+    if find "$solver_dir" -type f \( -name "*.C" -o -name "*.H" -o -name "*.h" -o -name "Make/files" -o -name "Make/options" -o -name "Allwmake" \) -newer "$binary_path" 2>/dev/null | grep -q .; then
+        return 0  # true - needs rebuild
+    fi
+    
+    # Check for Allwmake dependencies (check _LIB directories)
+    if [ -d "${solver_dir}/_LIB" ]; then
+        if find "${solver_dir}/_LIB" -type f -name "*.C" -o -name "*.H" -newer "$binary_path" 2>/dev/null | grep -q .; then
+            return 0  # true - needs rebuild
+        fi
+    fi
+    
+    return 1  # false - no rebuild needed
+}
+
 build_solver() {
     local solver_dir="$1"
     local solver_name=$(basename "$solver_dir")
@@ -34,12 +62,30 @@ build_solver() {
     
     cd "$solver_dir"
     
+    # Check if rebuild is needed
+    if ! needs_rebuild "$solver_dir"; then
+        echo "✓ ${solver_name} is up to date (skipping build)"
+        echo "  Binary: $FOAM_USER_APPBIN/${solver_name}"
+        return 0
+    fi
+    
+    echo "  Source files changed, rebuilding..."
+    
     # Check for Allwmake (urbanMicroclimateFoam style)
     if [ -f "Allwmake" ]; then
         echo "Found Allwmake, running ./Allwmake..."
-        if ./Allwmake > /tmp/build_${solver_name}.log 2>&1; then
-            echo "✓ ${solver_name} built successfully (Allwmake)"
-            return 0
+        # Redirect output to log but also show progress
+        if ./Allwmake 2>&1 | tee /tmp/build_${solver_name}.log | tail -5; then
+            # Verify binary was created
+            if [ -f "$FOAM_USER_APPBIN/${solver_name}" ]; then
+                echo "✓ ${solver_name} built successfully (Allwmake)"
+                echo "  Binary: $FOAM_USER_APPBIN/${solver_name}"
+                return 0
+            else
+                echo "✗ ${solver_name} build completed but binary not found"
+                echo "  Expected: $FOAM_USER_APPBIN/${solver_name}"
+                return 1
+            fi
         else
             echo "✗ ${solver_name} build failed (Allwmake)"
             cat /tmp/build_${solver_name}.log | tail -30
@@ -49,8 +95,14 @@ build_solver() {
     elif [ -f "Make/files" ]; then
         echo "Found Make/files, running wmake..."
         if wmake > /tmp/build_${solver_name}.log 2>&1; then
-            echo "✓ ${solver_name} built successfully (wmake)"
-            return 0
+            # Verify binary was created
+            if command -v "${solver_name}" > /dev/null 2>&1 || [ -f "$FOAM_USER_APPBIN/${solver_name}" ]; then
+                echo "✓ ${solver_name} built successfully (wmake)"
+                return 0
+            else
+                echo "✗ ${solver_name} build completed but binary not found"
+                return 1
+            fi
         else
             echo "✗ ${solver_name} build failed (wmake)"
             cat /tmp/build_${solver_name}.log | tail -30
