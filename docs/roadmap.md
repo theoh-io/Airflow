@@ -6,9 +6,9 @@
 - Minimal solver skeleton (`microClimateFoam.C`) compiles via `wmake`.
 - Utility scripts (`test_env.sh`, `test_docker.sh`) validate the container.
 
-## Phase 1 — Flow Solver Core (🚧 In Progress)
-- [ ] Add `createFields.H` to instantiate velocity, pressure, and turbulence fields.
-- [ ] Implement incompressible momentum equation (PISO/PIMPLE loop) with residual logging.
+## Phase 1 — Flow Solver Core (✅ Done)
+- [x] Add `createFields.H` to instantiate velocity, pressure, and turbulence fields.
+- [x] Implement incompressible momentum equation (PISO loop) with residual logging.
 - [x] Provide consistent boundary-condition templates in `0/` for tutorial case (`cases/heatedCavity`).
 
 ## Phase 2 — Thermal Transport (🗓 Planned)

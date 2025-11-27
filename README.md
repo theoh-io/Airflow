@@ -57,8 +57,8 @@ wmake
 ## Status & Roadmap
 
 - ✅ **Phase 0 – Environment & Skeleton**: Docker image, Compose workflow, and minimal solver build are working.
-- 🚧 **Phase 1 – Flow Solver Core**: Implementing incompressible equations and field creation.
-- 🗓 **Phase 2 – Thermal Transport**: Coupled temperature solve and buoyancy models.
+- ✅ **Phase 1 – Flow Solver Core**: Incompressible momentum equation with PISO loop implemented and tested.
+- 🚧 **Phase 2 – Thermal Transport**: Coupled temperature solve and buoyancy models (next priority).
 - 🗓 **Phase 3 – Verification & Tooling**: Tutorial cases, automated regression, CI.
 - 🗓 **Phase 4 – Visualization & UX**: ParaView guidance and post-processing scripts.
 
@@ -141,11 +141,11 @@ docker run --rm --entrypoint "" -i microclimatefoam:dev bash -lc '
 ## Documentation & Next Steps
 
 - `docs/roadmap.md`: canonical tracker for phases and tasks.
+- **Phase 1 Complete**: The solver now implements incompressible flow with PISO pressure-velocity coupling. Tested successfully with the heated cavity case.
 - Upcoming work:
-  - implement `createFields.H` and the incompressible momentum loop
-  - add temperature transport with optional buoyancy
-  - fix Docker Desktop ↔ WSL integration so `docker compose` and bind mounts work without the tar workaround
+  - add temperature transport equation with Boussinesq buoyancy coupling (Phase 2)
   - extend test scripts to execute the tutorial case and capture residuals
+  - add CI (GitHub Actions) for automated builds and regression testing
   - document ParaView/X11 setup for Linux, macOS, and WSL2 users
 
 Contributions should update both the roadmap and this section so users can quickly tell what’s done versus planned.
