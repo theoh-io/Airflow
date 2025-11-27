@@ -45,14 +45,45 @@ wmake
 └── README.md
 ```
 
-## Status
+## Status & Roadmap
 
-✅ **Basic solver structure complete**
-- Minimal OpenFOAM solver skeleton implemented
-- Docker development environment configured
-- Build system configured (wmake)
+- ✅ **Phase 0 – Environment & Skeleton**: Docker image, Compose workflow, and minimal solver build are working.
+- 🚧 **Phase 1 – Flow Solver Core**: Implementing incompressible equations and field creation.
+- 🗓 **Phase 2 – Thermal Transport**: Coupled temperature solve and buoyancy models.
+- 🗓 **Phase 3 – Verification & Tooling**: Tutorial cases, automated regression, CI.
+- 🗓 **Phase 4 – Visualization & UX**: ParaView guidance and post-processing scripts.
 
-🚧 **Next steps**
-- Implement incompressible flow equations
-- Add temperature transport
-- Create test cases
+See `docs/roadmap.md` for the detailed checklist.
+
+## Development Workflow
+
+1. **Start dev container**
+   ```bash
+   docker compose up -d
+   docker compose exec dev bash
+   ```
+2. **Inside container**
+   ```bash
+   source /opt/openfoam/etc/bashrc
+   cd /workspace/src/microClimateFoam
+   wmake
+   ```
+3. **Test environment**
+   ```bash
+   ./test_env.sh          # runs wmake + binary sanity checks
+   ./test_docker.sh       # lighter-weight smoke test
+   ```
+
+> `test_env.sh` is written to run inside the container root (`/workspace`). It suppresses the OpenFOAM welcome banner so CI logs stay readable.
+
+## Documentation & Next Steps
+
+- `docs/roadmap.md`: canonical tracker for phases and tasks.
+- Upcoming work:
+  - implement `createFields.H` and the incompressible momentum loop
+  - add temperature transport with optional buoyancy
+  - ship at least one tutorial case plus run instructions
+  - extend test scripts to execute the tutorial case and capture residuals
+  - document ParaView/X11 setup for Linux, macOS, and WSL2 users
+
+Contributions should update both the roadmap and this section so users can quickly tell what’s done versus planned.
