@@ -74,8 +74,8 @@
   - [x] Case catalog with descriptions and solver requirements
   - [x] Update README with multi-solver architecture
   - [x] Integration notes document created
-  - [ ] Solver comparison table (features, use cases) - TODO
-  - [ ] Solver-specific documentation sections - TODO
+  - [x] Solver comparison table (features, use cases) - See `docs/SOLVER_COMPARISON.md`
+  - [x] Solver-specific documentation sections - See `docs/SOLVERS/`
 
 ## Phase 5.1 — CI/CD Optimization & Quick Validation (✅ Done)
 

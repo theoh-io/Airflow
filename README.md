@@ -341,12 +341,21 @@ This project integrates multiple OpenFOAM solvers for microclimate simulations:
 
 See `docs/roadmap.md` for integration status and `docs/INTEGRATION_NOTES.md` for detailed integration information.
 
+**Solver Documentation:**
+- [Solver Comparison](docs/SOLVER_COMPARISON.md) - Comprehensive comparison of both solvers
+- [microClimateFoam Documentation](docs/SOLVERS/microClimateFoam.md) - Detailed documentation for microClimateFoam
+- [urbanMicroclimateFoam Documentation](docs/SOLVERS/urbanMicroclimateFoam.md) - Detailed documentation for urbanMicroclimateFoam
+
 ## Documentation & Next Steps
 
 - `docs/roadmap.md`: canonical tracker for phases and tasks.
 - `docs/visualization.md`: complete visualization guide with platform-specific instructions.
 - `docs/BUILD_CACHING.md`: build and mesh caching system documentation.
 - `docs/quick_start.md`: quick start guide for running cases.
+- `docs/SOLVER_COMPARISON.md`: comprehensive comparison of both solvers.
+- `docs/SOLVERS/`: solver-specific documentation.
+  - `docs/SOLVERS/microClimateFoam.md`: microClimateFoam solver documentation.
+  - `docs/SOLVERS/urbanMicroclimateFoam.md`: urbanMicroclimateFoam solver documentation.
 - **Phase 5 Complete**: Multi-solver integration with `urbanMicroclimateFoam` and tutorial cases
 - **Future enhancements** (see `docs/roadmap.md`):
   - Case management and standardization (Phase 6)
