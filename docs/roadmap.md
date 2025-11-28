@@ -103,19 +103,23 @@
   - [x] Focus on: build, mesh, solver startup, field writing
   - [x] Make full test suite optional (only on schedule/workflow_dispatch)
 - [x] **PRIORITY**: Create quick validation configuration:
-  - [x] Implemented via script modifications (deltaT=100s, endTime=200s)
+  - [x] Implemented via script modifications (deltaT=50s, endTime=50s for tutorial cases)
   - [x] Document quick vs full test distinction
-  - [x] Added `--quick-validation` option to `run_street_canyon.sh`
+  - [x] Added `--quick-validation` option to `run_case.sh`
 - [x] Update `test_full.sh`:
   - [x] Marked as optional/separate workflow in CI
   - [x] Documented that it's for comprehensive validation, not CI
   - [x] Configured to run only on schedule/workflow_dispatch
   - [x] Kept current behavior for full validation runs
-- [x] Update `run_street_canyon.sh`:
-  - [x] Added `--quick-validation` option (deltaT=100s, endTime=200s)
-  - [x] Kept `--quick` for current behavior (12 time steps)
-  - [x] Documented time expectations for each mode
+- [x] Enhanced `run_case.sh` (replaced `run_street_canyon.sh`):
+  - [x] Added `--quick-validation` option (deltaT=50s, endTime=50s for tutorial cases)
+  - [x] Added `--quick` for quick test mode (12 time steps)
+  - [x] Added `--full` for full simulation mode
+  - [x] Added `--verbose` for real-time monitoring
   - [x] Added `--deltaT` and `--endTime` options for flexibility
+  - [x] Added auto-detection of solver from controlDict
+  - [x] Added multi-region support
+  - [x] Removed redundant `run_street_canyon.sh` script
 - [x] Documentation:
   - [x] Updated `docs/quick_start.md` with quick validation times
   - [x] Documented CI best practices (quick validation in CI, full runs separately)

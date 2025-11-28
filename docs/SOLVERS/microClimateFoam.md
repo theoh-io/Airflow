@@ -149,12 +149,26 @@ reconstructPar
 
 ## Available Cases
 
+**⚠️ IMPORTANT: Case Compatibility**
+
+`microClimateFoam` is designed for **single-region cases** in the `custom_cases/` directory. 
+
+**Compatible:**
+- `custom_cases/heatedCavity/` - Heated cavity validation case
+- Any other cases in `custom_cases/` designed for single-region solvers
+
+**Incompatible:**
+- **DO NOT** use with cases in `cases/` directory (tutorial cases)
+- Tutorial cases are multi-region and use `p_rgh` instead of `p`
+- Tutorial cases require `urbanMicroclimateFoam` solver
+
 ### heatedCavity
 - **Location**: `custom_cases/heatedCavity/`
 - **Description**: Heated cavity validation case
 - **Purpose**: Validation and testing
 - **Mesh**: Structured hexahedral mesh (blockMesh)
 - **Physics**: Natural convection in a heated cavity
+- **Solver**: `microClimateFoam` (auto-detected)
 
 ## Limitations
 

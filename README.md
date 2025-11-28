@@ -132,7 +132,9 @@ See `docs/roadmap.md` for the detailed checklist.
 > 
 > All scripts are designed to run inside the container and are used by CI for automated testing.
 
-### Quick Start (Default: streetCanyon_CFD with urbanMicroclimateFoam)
+### Quick Start: Tutorial Cases (urbanMicroclimateFoam)
+
+**Note:** Tutorial cases in `cases/` are designed for `urbanMicroclimateFoam` and are **incompatible** with `microClimateFoam`.
 
 The default solver is `urbanMicroclimateFoam` and the default test case is `streetCanyon_CFD`.
 
@@ -143,21 +145,21 @@ The default solver is `urbanMicroclimateFoam` and the default test case is `stre
 
 **Run the default test case:**
 ```bash
-# Quick validation (CI-optimized, 5-15 minutes) - RECOMMENDED
-./scripts/run_street_canyon.sh --quick-validation
+# Quick validation (CI-optimized, 3-5 minutes) - RECOMMENDED
+./scripts/run_case.sh --quick-validation -v cases/streetCanyon_CFD
 
 # Quick test (12 time steps, 1-6 hours) - for local testing
-./scripts/run_street_canyon.sh --quick
+./scripts/run_case.sh --quick -v cases/streetCanyon_CFD
 
 # Full simulation (24 time steps, 2-12+ hours)
-./scripts/run_street_canyon.sh --full
+./scripts/run_case.sh --full -v cases/streetCanyon_CFD
 
 # Using the test scripts
 ./test_env.sh      # Quick validation (2 time steps, 5-15 min) - optimized for CI
 ./test_full.sh     # Full simulation with visualization (separate from CI)
 
-# Or manually
-./scripts/run_case.sh cases/streetCanyon_CFD urbanMicroclimateFoam
+# Or manually (solver auto-detected from controlDict)
+./scripts/run_case.sh cases/streetCanyon_CFD
 ```
 
 **Generate visualizations:**
@@ -173,43 +175,79 @@ The default solver is `urbanMicroclimateFoam` and the default test case is `stre
 
 See `docs/quick_start.md` for a complete workflow example.
 
-### Heated Cavity (microClimateFoam)
+### Custom Cases (microClimateFoam)
 
-To compile the microClimateFoam solver and run the heated cavity case:
+**Note:** Custom cases in `custom_cases/` are designed for `microClimateFoam` (our custom solver) and are **incompatible** with `urbanMicroclimateFoam`.
+
+To compile the microClimateFoam solver and run a custom case:
 
 ```bash
+# Run heated cavity case (designed for microClimateFoam)
 ./scripts/run_case.sh custom_cases/heatedCavity
+
+# The solver is auto-detected from controlDict, or specify explicitly:
+./scripts/run_case.sh custom_cases/heatedCavity microClimateFoam
 ```
 
 This uses the generic case runner and writes the solver log to `custom_cases/heatedCavity/log.microClimateFoam`.
 
 ### Generic Case Runner
 
-For other cases, use the flexible helper:
+The `run_case.sh` script automatically detects the correct solver from the case's `controlDict`. Use it for any case:
 
+**For Custom Cases (microClimateFoam):**
 ```bash
-# Build solver, run blockMesh + checkMesh (if present), and launch microClimateFoam
+# Auto-detects microClimateFoam from controlDict
 ./scripts/run_case.sh custom_cases/heatedCavity
 
 # Run in parallel mode (auto-creates decomposeParDict if missing)
 ./scripts/run_case.sh -p 4 custom_cases/heatedCavity
 
-# Run a tutorial case with urbanMicroclimateFoam
-./scripts/run_case.sh -n -B cases/streetCanyon_CFD urbanMicroclimateFoam
-
-# List all available cases
-./scripts/list_cases.sh
-
-# Skip wmake, skip blockMesh, and run another solver with custom args
-./scripts/run_case.sh -n -B custom_cases/myCase buoyantBoussinesqSimpleFoam -- -parallel
-
-# Parallel run without reconstruction (keeps decomposed results)
-./scripts/run_case.sh -p 2 -R custom_cases/myCase
+# With verbose output and quick validation
+./scripts/run_case.sh -v --quick-validation custom_cases/heatedCavity
 ```
 
+**For Tutorial Cases (urbanMicroclimateFoam):**
+```bash
+# Auto-detects urbanMicroclimateFoam from controlDict
+./scripts/run_case.sh cases/streetCanyon_CFD
+
+# Or specify explicitly
+./scripts/run_case.sh cases/streetCanyon_CFD urbanMicroclimateFoam
+
+# With verbose output and quick validation
+./scripts/run_case.sh -v --quick-validation cases/streetCanyon_CFD
+```
+
+**Other Options:**
+```bash
+# List all available cases with their solvers
+./scripts/list_cases.sh
+
+# Skip build and mesh generation
+./scripts/run_case.sh -n -B cases/streetCanyon_CFD
+
+# Parallel run without reconstruction
+./scripts/run_case.sh -p 2 -R custom_cases/heatedCavity
+```
+
+**⚠️ Important:** Always use the correct solver for each case type:
+- `custom_cases/*` → `microClimateFoam` (auto-detected)
+- `cases/*` → `urbanMicroclimateFoam` (auto-detected)
+
 **Case Organization:**
-- `custom_cases/` - Custom validation/test cases (e.g., `heatedCavity` for microClimateFoam)
-- `cases/` - Tutorial cases from `urbanMicroclimateFoam-tutorials` (6 cases available)
+
+**IMPORTANT: Solver-Case Compatibility**
+
+- **`custom_cases/`** - Custom validation/test cases designed for **`microClimateFoam`** (our custom solver)
+  - These cases are single-region and use standard OpenFOAM fields (`p`, `U`, `T`)
+  - Example: `custom_cases/heatedCavity/` - designed for `microClimateFoam`
+  - **DO NOT** run tutorial cases (`cases/`) with `microClimateFoam` - they are incompatible
+
+- **`cases/`** - Tutorial cases from `urbanMicroclimateFoam-tutorials` designed for **`urbanMicroclimateFoam`** (external solver)
+  - These cases are multi-region and use advanced fields (`p_rgh`, `h`, etc.)
+  - Examples: `cases/streetCanyon_CFD/`, `cases/streetCanyon_CFDHAM/`, etc. (6 cases available)
+  - **DO NOT** run custom cases (`custom_cases/`) with `urbanMicroclimateFoam` - they may not work correctly
 
 **Features:**
 - Automatically runs `checkMesh` after `blockMesh` to validate mesh quality
@@ -312,14 +350,18 @@ Full details in `docs/visualization.md`.
 
 This project integrates multiple OpenFOAM solvers for microclimate simulations:
 
-- **`urbanMicroclimateFoam`** (Default): Advanced solver from OpenFOAM-BuildingPhysics with extended urban microclimate capabilities
+- **`urbanMicroclimateFoam`**: Advanced solver from OpenFOAM-BuildingPhysics with extended urban microclimate capabilities
   - Build: `./Allwmake` (custom build system)
-  - Cases: `cases/streetCanyon_*`, `cases/windAroundBuildings_*` (6 tutorial cases)
-  - Default test case: `cases/streetCanyon_CFD/`
+  - **Cases:** `cases/streetCanyon_*`, `cases/windAroundBuildings_*` (6 tutorial cases)
+  - **Designed for:** Multi-region cases with HAM, radiation, and vegetation
+  - **Default test case:** `cases/streetCanyon_CFD/`
+  - **⚠️ DO NOT use with `custom_cases/`** - incompatible field types
   
 - **`microClimateFoam`**: Custom solver for incompressible flow with thermal transport and Boussinesq buoyancy
   - Build: `wmake` (standard OpenFOAM build)
-  - Cases: `custom_cases/heatedCavity/`
+  - **Cases:** `custom_cases/heatedCavity/` and other custom cases
+  - **Designed for:** Single-region cases with simple thermal-fluid coupling
+  - **⚠️ DO NOT use with `cases/`** - incompatible (multi-region, different field types)
 
 **Build all solvers:**
 ```bash

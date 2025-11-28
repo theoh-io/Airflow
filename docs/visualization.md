@@ -195,7 +195,7 @@ docker compose run --rm dev bash -c "
 **Complete workflow:**
 ```bash
 # 1. Run the case
-./scripts/run_street_canyon.sh --quick
+./scripts/run_case.sh --quick -v cases/streetCanyon_CFD
 
 # 2. Generate visualizations for early validation
 ./scripts/postprocess/generate_images.sh cases/streetCanyon_CFD 36000

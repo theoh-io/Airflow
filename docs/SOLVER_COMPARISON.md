@@ -59,6 +59,7 @@ This document provides a comprehensive comparison of the two solvers available i
 
 **Example Cases:**
 - `custom_cases/heatedCavity/` - Heated cavity validation case
+- **⚠️ Note:** Only use with cases in `custom_cases/` directory. Tutorial cases in `cases/` are incompatible.
 
 ### urbanMicroclimateFoam
 
@@ -88,6 +89,7 @@ This document provides a comprehensive comparison of the two solvers available i
 - `cases/streetCanyon_CFDHAM_veg/` - Street canyon with HAM and vegetation
 - `cases/windAroundBuildings_CFDHAM/` - Wind around buildings with HAM
 - `cases/windAroundBuildings_CFDHAM_veg/` - Wind around buildings with HAM and vegetation
+- **⚠️ Note:** Only use with cases in `cases/` directory. Custom cases in `custom_cases/` are incompatible.
 
 ## When to Use Which Solver?
 

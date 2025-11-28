@@ -207,6 +207,20 @@ reconstructPar -allRegions
 
 ## Available Cases
 
+**⚠️ IMPORTANT: Case Compatibility**
+
+`urbanMicroclimateFoam` is designed for **multi-region cases** in the `cases/` directory.
+
+**Compatible:**
+- All tutorial cases in `cases/` directory
+- Cases with `constant/regionProperties` (multi-region setup)
+- Cases using `p_rgh`, `h` (enthalpy), and other advanced fields
+
+**Incompatible:**
+- **DO NOT** use with cases in `custom_cases/` directory
+- Custom cases are single-region and use `p` instead of `p_rgh`
+- Custom cases require `microClimateFoam` solver
+
 ### streetCanyon_CFD
 - **Location**: `cases/streetCanyon_CFD/`
 - **Description**: Basic street canyon CFD simulation

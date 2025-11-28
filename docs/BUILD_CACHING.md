@@ -82,23 +82,22 @@ build/
 
 ```bash
 # First run: generates mesh
-./scripts/run_street_canyon.sh --quick-validation
+./scripts/run_case.sh --quick-validation cases/streetCanyon_CFD
 # Output: "Generating mesh..." → "✓ Mesh ready"
 
 # Second run: skips mesh generation
-./scripts/run_street_canyon.sh --quick-validation
+./scripts/run_case.sh --quick-validation cases/streetCanyon_CFD
 # Output: "✓ Mesh already exists and is up to date (skipping generation)"
 
 # After modifying blockMeshDict: automatically regenerates
-# Edit cases/streetCanyon_CFD/constant/polyMesh/blockMeshDict
-./scripts/run_street_canyon.sh --quick-validation
+# Edit cases/streetCanyon_CFD/constant/air/polyMesh/blockMeshDict
+./scripts/run_case.sh --quick-validation cases/streetCanyon_CFD
 # Output: "Mesh exists but blockMeshDict is newer, regenerating mesh..."
 ```
 
 ### Scripts with Smart Mesh Checking
 
-- `scripts/run_street_canyon.sh`
-- `scripts/run_case.sh`
+- `scripts/run_case.sh` (handles both custom and tutorial cases)
 - `test_env.sh`
 
 All these scripts automatically check for existing meshes before running `blockMesh`.
@@ -113,11 +112,11 @@ rm -rf build/
 ./scripts/build_all_solvers.sh
 
 # Force mesh regeneration (delete mesh)
-rm -rf cases/streetCanyon_CFD/constant/polyMesh/
-./scripts/run_street_canyon.sh --quick-validation
+rm -rf cases/streetCanyon_CFD/constant/air/polyMesh/
+./scripts/run_case.sh --quick-validation cases/streetCanyon_CFD
 
 # Or use --no-mesh to skip mesh entirely
-./scripts/run_street_canyon.sh --quick-validation --no-mesh
+./scripts/run_case.sh --quick-validation -B cases/streetCanyon_CFD
 ```
 
 ## CI/CD Considerations
