@@ -1,0 +1,24 @@
+# Cloud-optimized Docker Compose configuration
+# This configuration removes X11 dependencies and is optimized for headless cloud execution
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.cloud
+      args:
+        USER_UID: "${USER_UID:-1000}"
+        USER_GID: "${USER_GID:-1000}"
+    image: microclimatefoam:dev
+    entrypoint: ""
+    command: ["/bin/bash", "-c", "source /opt/openfoam8/etc/bashrc && exec bash"]
+    volumes:
+      - .:/workspace
+      - ./build:/home/openfoam/platforms  # Persist build artifacts (solvers, libraries)
+    working_dir: /workspace
+    user: openfoam
+    stdin_open: true
+    tty: true
+    # Remove network_mode: host for cloud compatibility
+    # Remove X11-related environment variables and volumes
+
