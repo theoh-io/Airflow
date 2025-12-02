@@ -204,18 +204,33 @@ docker compose run --rm dev bash -c "
 ls -lh cases/streetCanyon_CFD/images/
 ```
 
-This generates 4 standard images in `cases/streetCanyon_CFD/images/` (or `custom_cases/[caseName]/images/`):
-- `temperature_200.png` - Temperature contour slice with adaptive color range
-- `velocity_200.png` - Velocity vector field with adaptive scaling
-- `streamlines_200.png` - Streamline visualization
-- `overview_200.png` - Combined temperature and velocity overlay
+This generates images in `cases/streetCanyon_CFD/images/` (or `custom_cases/[caseName]/images/`):
+
+**For 3D cases (e.g., `streetCanyon_CFD`):** 7 images
+- `temperature_<time>.png` - Temperature contour slice (plan view) with adaptive color range
+- `temperature_vertical_<time>.png` - Temperature contour slice (elevation/side view) showing vertical stratification
+- `temperature_isometric_<time>.png` - Isometric 3D view with temperature contours
+- `geometry_3d_<time>.png` - 3D geometry visualization with transparent surfaces (walls/buildings) colored by temperature and streamlines showing flow patterns
+- `velocity_<time>.png` - Velocity vector field with adaptive scaling
+- `streamlines_<time>.png` - Streamline visualization
+- `overview_<time>.png` - Combined temperature and velocity overlay
+
+**For 2D cases (e.g., `heatedCavity`):** 4 images
+- `temperature_<time>.png` - Temperature contour slice with adaptive color range
+- `velocity_<time>.png` - Velocity vector field with adaptive scaling
+- `streamlines_<time>.png` - Streamline visualization
+- `overview_<time>.png` - Combined temperature and velocity overlay
+
+The script automatically detects 2D vs. 3D cases based on domain aspect ratio and generates the appropriate visualizations.
 
 **Adaptive Features:**
 The script automatically adapts to different test cases:
+- **2D/3D detection**: Automatically detects case dimensionality based on domain aspect ratio (Z / max(X,Y) > 0.1 = 3D)
 - **Velocity scaling**: Automatically calculates optimal vector size based on domain dimensions and velocity magnitude (target: ~7% of domain size)
 - **Temperature range**: Auto-detects temperature range and focuses on internal field variation (handles boundary values intelligently)
 - **Mesh density**: Adaptively adjusts vector density (stride) based on mesh size for optimal visualization
 - **Domain detection**: Automatically detects domain bounds and characteristic length
+- **3D geometry filtering**: For 3D cases, automatically filters domain boundaries (inlet/outlet/top) to focus on internal geometry
 
 **Options:**
 - `--output-dir DIR` - Custom output directory (default: `images/`)

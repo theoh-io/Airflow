@@ -318,10 +318,23 @@ See `docs/visualization.md` for complete visualization setup instructions. For a
 # Or for tutorial cases:
 ./scripts/postprocess/generate_images.sh cases/[tutorialCase] [time]
 ```
-Generates 4 standard images: temperature contour, velocity vectors, streamlines, and overview. The script automatically adapts to different test cases:
+Generates visualization images automatically adapted to case type:
+
+**For 3D cases (e.g., `streetCanyon_CFD`):** 7 images
+- Temperature slices (plan, vertical, isometric views)
+- 3D geometry view with transparent surfaces and streamlines
+- Velocity vectors and streamlines
+- Overview composite
+
+**For 2D cases (e.g., `heatedCavity`):** 4 images
+- Temperature contour, velocity vectors, streamlines, and overview
+
+The script automatically adapts to different test cases:
+- **2D/3D detection**: Automatically detects case dimensionality and generates appropriate visualizations
 - **Adaptive velocity scaling**: Automatically calculates optimal vector size based on domain and velocity magnitude
 - **Adaptive temperature range**: Auto-detects and focuses on internal field variation
 - **Adaptive mesh density**: Adjusts vector density based on mesh size
+- **3D geometry filtering**: For 3D cases, filters domain boundaries to focus on internal geometry
 - Perfect for quick inspection, CI integration, and works across different case configurations
 
 **Extract field statistics**:
