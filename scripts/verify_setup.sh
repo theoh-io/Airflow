@@ -13,6 +13,7 @@ echo ""
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Track if all checks pass
@@ -34,18 +35,78 @@ print_warning() {
     echo -e "${YELLOW}⚠${NC} $1"
 }
 
+# Function to print info
+print_info() {
+    echo -e "${BLUE}ℹ${NC} $1"
+}
+
+# Detect if running inside Docker
+DETECT_DOCKER=false
+if [ -f /.dockerenv ] || grep -Eq '/(lxc|docker)/[[:alnum:]]{64}' /proc/self/cgroup 2>/dev/null; then
+    DETECT_DOCKER=true
+fi
+
+# Check 0: Verify we're in Docker container
+echo "[0/9] Checking execution environment..."
+if [ "$DETECT_DOCKER" = true ]; then
+    print_success "Running inside Docker container"
+    echo "  Container detected via /.dockerenv or cgroup"
+else
+    print_error "NOT running inside Docker container"
+    echo ""
+    echo "This script must be run inside the Docker container where OpenFOAM is installed."
+    echo ""
+    echo "To fix this:"
+    echo ""
+    echo "1. If using Cursor Cloud Agent:"
+    echo "   - The agent should automatically run commands inside the container"
+    echo "   - Check that .cursor/environment.json is configured correctly"
+    echo "   - Verify the Docker image is built: docker images | grep microclimatefoam"
+    echo ""
+    echo "2. If running manually on VM:"
+    echo "   - Build the Docker image first:"
+    echo "     cd /path/to/Airflow"
+    echo "     docker build -f Dockerfile.cloud --build-arg USER_UID=\$(id -u) --build-arg USER_GID=\$(id -g) -t microclimatefoam:dev ."
+    echo ""
+    echo "   - Then run the script inside the container:"
+    echo "     docker run --rm -it -v \$(pwd):/workspace microclimatefoam:dev bash -c 'bash scripts/verify_setup.sh'"
+    echo ""
+    echo "   - Or use docker-compose:"
+    echo "     docker compose -f docker-compose.cloud.yml build"
+    echo "     docker compose -f docker-compose.cloud.yml run --rm dev bash scripts/verify_setup.sh"
+    echo ""
+    echo "3. Check if Docker is available:"
+    if command -v docker > /dev/null 2>&1; then
+        print_info "Docker is installed: $(docker --version)"
+        if docker images | grep -q microclimatefoam; then
+            print_info "Docker image 'microclimatefoam' found"
+        else
+            print_warning "Docker image 'microclimatefoam' not found - you need to build it"
+        fi
+    else
+        print_error "Docker is not installed or not in PATH"
+    fi
+    echo ""
+    exit 1
+fi
+echo ""
+
 # Check 1: OpenFOAM bashrc file exists
-echo "[1/8] Checking OpenFOAM installation..."
+echo "[1/9] Checking OpenFOAM installation..."
 if [ -f "/opt/openfoam8/etc/bashrc" ]; then
     print_success "OpenFOAM bashrc found at /opt/openfoam8/etc/bashrc"
 else
     print_error "OpenFOAM bashrc not found at /opt/openfoam8/etc/bashrc"
+    echo ""
+    print_warning "This suggests the Docker image may not have been built correctly"
+    echo "  Expected base image: openfoam/openfoam8-paraview56"
+    echo "  Check Dockerfile.cloud to ensure it uses the correct base image"
     exit 1
 fi
 echo ""
 
 # Check 2: Source OpenFOAM environment
-echo "[2/8] Loading OpenFOAM environment..."
+echo "[2/9] Loading OpenFOAM environment..."
 set +e  # Temporarily disable exit on error for sourcing
 . /opt/openfoam8/etc/bashrc 2>&1
 SOURCE_EXIT=$?
@@ -60,7 +121,7 @@ fi
 echo ""
 
 # Check 3: Verify OpenFOAM environment variables
-echo "[3/8] Checking OpenFOAM environment variables..."
+echo "[3/9] Checking OpenFOAM environment variables..."
 REQUIRED_VARS=("FOAM_RUN" "FOAM_USER_APPBIN" "WM_PROJECT_VERSION" "WM_PROJECT")
 MISSING_VARS=()
 
@@ -82,7 +143,7 @@ fi
 echo ""
 
 # Check 4: Verify OpenFOAM commands are available
-echo "[4/8] Checking OpenFOAM commands availability..."
+echo "[4/9] Checking OpenFOAM commands availability..."
 REQUIRED_CMDS=("blockMesh" "checkMesh" "wmake" "foamVersion")
 MISSING_CMDS=()
 
@@ -104,7 +165,7 @@ fi
 echo ""
 
 # Check 5: Verify OpenFOAM version
-echo "[5/8] Checking OpenFOAM version..."
+echo "[5/9] Checking OpenFOAM version..."
 if command -v foamVersion > /dev/null 2>&1; then
     OF_VERSION=$(foamVersion)
     print_success "OpenFOAM version: $OF_VERSION"
@@ -119,7 +180,7 @@ fi
 echo ""
 
 # Check 6: Verify workspace directory
-echo "[6/8] Checking workspace setup..."
+echo "[6/9] Checking workspace setup..."
 if [ -d "/workspace" ]; then
     print_success "Workspace directory exists: /workspace"
     if [ -w "/workspace" ]; then
@@ -133,7 +194,7 @@ fi
 echo ""
 
 # Check 7: Verify source code directory
-echo "[7/8] Checking source code structure..."
+echo "[7/9] Checking source code structure..."
 if [ -d "/workspace/src" ]; then
     print_success "Source directory exists: /workspace/src"
     if [ -d "/workspace/src/microClimateFoam" ]; then
@@ -151,8 +212,22 @@ else
 fi
 echo ""
 
-# Check 8: Test basic OpenFOAM functionality
-echo "[8/8] Testing basic OpenFOAM functionality..."
+# Check 8: Verify entrypoint script (for Dockerfile.cloud)
+echo "[8/9] Checking cloud entrypoint configuration..."
+if [ -f "/usr/local/bin/cloud-entrypoint.sh" ]; then
+    print_success "Cloud entrypoint script found"
+    if grep -q "source /opt/openfoam8/etc/bashrc" /usr/local/bin/cloud-entrypoint.sh; then
+        print_success "Entrypoint script sources OpenFOAM correctly"
+    else
+        print_warning "Entrypoint script exists but may not source OpenFOAM"
+    fi
+else
+    print_warning "Cloud entrypoint script not found (using standard Dockerfile instead of Dockerfile.cloud?)"
+fi
+echo ""
+
+# Check 9: Test basic OpenFOAM functionality
+echo "[9/9] Testing basic OpenFOAM functionality..."
 if command -v blockMesh > /dev/null 2>&1; then
     # Test blockMesh help (should work without a case)
     if blockMesh -help > /dev/null 2>&1; then
