@@ -246,7 +246,8 @@ The `run_case.sh` script automatically detects the correct solver from the case'
 
 - **`cases/`** - Tutorial cases from `urbanMicroclimateFoam-tutorials` designed for **`urbanMicroclimateFoam`** (external solver)
   - These cases are multi-region and use advanced fields (`p_rgh`, `h`, etc.)
-  - Examples: `cases/streetCanyon_CFD/`, `cases/streetCanyon_CFDHAM/`, etc. (6 cases available)
+  - Examples: `cases/streetCanyon_CFD/`, `cases/streetCanyon_CFDHAM/`, etc. (6 tutorial cases)
+  - Also includes custom cases like `cases/Vidigal_CFD/` (STL-based geometry)
   - **DO NOT** run custom cases (`custom_cases/`) with `urbanMicroclimateFoam` - they may not work correctly
 
 **Features:**
@@ -352,7 +353,7 @@ This project integrates multiple OpenFOAM solvers for microclimate simulations:
 
 - **`urbanMicroclimateFoam`**: Advanced solver from OpenFOAM-BuildingPhysics with extended urban microclimate capabilities
   - Build: `./Allwmake` (custom build system)
-  - **Cases:** `cases/streetCanyon_*`, `cases/windAroundBuildings_*` (6 tutorial cases)
+  - **Cases:** `cases/streetCanyon_*`, `cases/windAroundBuildings_*` (6 tutorial cases), plus custom cases like `cases/Vidigal_CFD/`
   - **Designed for:** Multi-region cases with HAM, radiation, and vegetation
   - **Default test case:** `cases/streetCanyon_CFD/`
   - **⚠️ DO NOT use with `custom_cases/`** - incompatible field types

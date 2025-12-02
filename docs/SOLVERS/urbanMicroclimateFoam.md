@@ -251,6 +251,14 @@ reconstructPar -allRegions
 - **Regions**: `air`, `buildings`, `ground`, `vegetation`
 - **Physics**: CFD + HAM + Vegetation
 
+### Vidigal_CFD
+- **Location**: `cases/Vidigal_CFD/`
+- **Description**: CFD simulation based on STL geometry (Vidigal case)
+- **Regions**: TBD (based on STL geometry, likely `air` and solid regions)
+- **Physics**: CFD only (no HAM)
+- **Geometry**: STL-based mesh using `snappyHexMesh`
+- **Status**: In development - see `docs/CASE_CREATION_PLAN.md` for setup details
+
 ## Features and Capabilities
 
 ### Multi-Region Support

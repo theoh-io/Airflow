@@ -1,8 +1,8 @@
 # microClimateFoam Roadmap
 
-> **Current Priority**: Phase 5.1 - CI/CD Optimization & Quick Validation
+> **Current Priority**: Vidigal_CFD Case Creation
 > 
-> The test suite currently takes too long for CI. Priority is to optimize for quick validation (5-15 min) while keeping full tests available separately.
+> Create new STL-based case `cases/Vidigal_CFD/` using `streetCanyon_CFD` as a template. This involves setting up STL-based meshing with `snappyHexMesh`, configuring multi-region setup, and integrating with the `urbanMicroclimateFoam` solver. See `docs/CASE_CREATION_PLAN.md` for detailed implementation plan.
 
 ## Phase 0 — Environment & Skeleton (✅ Done)
 - Docker image (`openfoam/openfoam8-paraview56`) builds successfully.
@@ -137,6 +137,67 @@
 - Quick validation (deltaT=100s, 2 steps): 5-15 minutes
 - Current quick test (deltaT=3600s, 12 steps): 1-6 hours (too long for CI)
 - Full simulation (deltaT=3600s, 24 steps): 2-12+ hours (not for CI)
+
+## Phase 5.2 — Vidigal_CFD Case Creation (IN PROGRESS)
+
+**Goal**: Create a new STL-based CFD case (`Vidigal_CFD`) for urban microclimate simulations using `urbanMicroclimateFoam` solver.
+
+**Description**: This case will use STL geometry provided by the user and implement STL-based meshing using `snappyHexMesh`, unlike the existing tutorial cases which use `blockMesh`. This demonstrates the workflow for creating custom cases with complex geometries.
+
+**Key Tasks**:
+- [x] **Phase 1**: Directory setup and template copy from `streetCanyon_CFD`
+  - [x] Create `cases/Vidigal_CFD/` directory structure
+  - [x] Copy and adapt base structure from `streetCanyon_CFD`
+  - [x] Place user-provided STL file in `constant/triSurface/`
+- [x] **Phase 2**: Mesh generation configuration
+  - [x] Analyze STL geometry and calculate domain bounds
+  - [x] Create background mesh using `blockMeshDict`
+  - [x] Configure `snappyHexMeshDict` for STL-based meshing
+  - [x] Set up mesh generation automation scripts
+  - [x] Generate background mesh (6.4M cells) ✅
+  - [~] snappyHexMesh refinement (IN PROGRESS - partially complete, needs restart)
+    - [x] Surface refinement iterations completed
+    - [x] Mesh cleanup and baffle handling started
+    - [ ] Final mesh refinement and snap phase completion
+- [ ] **Phase 3**: Multi-region setup
+  - [ ] Determine required regions based on STL geometry
+  - [ ] Configure `constant/regionProperties`
+  - [ ] Set up region boundaries and interface patches
+- [ ] **Phase 4**: Boundary conditions and initial fields
+  - [ ] Update initial field files in `0/` directory
+  - [ ] Configure boundary patch names from STL-based mesh
+  - [ ] Set up inlet/outlet and wall boundary conditions
+- [ ] **Phase 5**: Solver configuration
+  - [ ] Verify `urbanMicroclimateFoam` solver configuration
+  - [ ] Configure turbulence model
+  - [ ] Set thermophysical properties for Vidigal conditions
+- [ ] **Phase 6**: Scripts and automation
+  - [ ] Update `Allrun` script for STL-based workflow
+  - [ ] Update `Allclean` script
+  - [ ] Create case `README.md` documentation
+- [ ] **Phase 7**: Testing and validation
+  - [ ] Test mesh generation and verify mesh quality
+  - [ ] Run quick validation test (`--quick-validation`)
+  - [ ] Generate visualizations and validate results
+
+**Documentation**:
+- [x] Created comprehensive case creation plan (`docs/CASE_CREATION_PLAN.md`)
+- [x] Updated `docs/SOLVERS/urbanMicroclimateFoam.md` with Vidigal_CFD case entry
+- [x] Updated `README.md` to mention Vidigal_CFD case
+- [x] Created validation and testing documentation
+- [x] Created mesh generation status reports
+- [x] Created `docs/VIDIGAL_STATUS.md` with detailed progress tracking
+
+**Success Criteria**:
+- Case directory structure created and organized
+- STL file integrated and meshing successful
+- Multi-region setup working with `urbanMicroclimateFoam`
+- Quick validation run completes successfully
+- Case documented and ready for use
+
+**Estimated Timeline**: 8-14 hours (depending on STL complexity and mesh refinement)
+
+**See**: `docs/CASE_CREATION_PLAN.md` for detailed implementation guide
 
 ## Phase 6 — Case Management & Standardization (PLANNED)
 - [ ] Case metadata system:
