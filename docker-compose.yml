@@ -17,3 +17,4 @@ services:
     network_mode: host      # Required for X11 forwarding
     stdin_open: true
     tty: true
+

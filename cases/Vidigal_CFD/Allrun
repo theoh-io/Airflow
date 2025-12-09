@@ -1,0 +1,64 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+
+# Source tutorial run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+# Mesh generation workflow for STL-based geometry
+echo "=========================================="
+echo "Vidigal_CFD Mesh Generation"
+echo "=========================================="
+echo ""
+
+# Step 1: Generate background mesh
+echo "Step 1: Generating background mesh with blockMesh..."
+runApplication blockMesh -region air
+
+# Step 2: Prepare for snappyHexMesh (create temporary single-region structure)
+echo ""
+echo "Step 2: Preparing mesh for snappyHexMesh..."
+if [ -d "constant/polyMesh" ]; then
+    rm -rf constant/polyMesh
+fi
+mkdir -p constant/polyMesh
+cp -r constant/air/polyMesh/* constant/polyMesh/
+cp system/air/fvSchemes system/ 2>/dev/null || true
+cp system/air/fvSolution system/ 2>/dev/null || true
+
+# Step 3: Refine and snap mesh to STL geometry
+echo ""
+echo "Step 3: Refining and snapping mesh to STL geometry with snappyHexMesh..."
+echo "  (This may take 30 minutes to several hours depending on geometry complexity)"
+runApplication snappyHexMesh -dict system/snappyHexMeshDict -overwrite
+
+# Step 4: Copy mesh back to region structure
+echo ""
+echo "Step 4: Copying refined mesh back to region structure..."
+cp -r constant/polyMesh/* constant/air/polyMesh/
+rm -rf constant/polyMesh
+
+# Step 4: Check mesh quality
+echo ""
+echo "Step 4: Checking mesh quality..."
+runApplication checkMesh -region air
+
+echo ""
+echo "=========================================="
+echo "Mesh generation complete!"
+echo "=========================================="
+echo ""
+
+#-- Run solver on single processor
+echo "Starting solver..."
+runApplication `getApplication`
+
+## Run in parallel
+## Decompose
+#runApplication decomposePar -region air
+#
+#runParallel `getApplication` 8
+#
+## Reconstruct
+#runApplication reconstructPar -allRegions -latestTime
+
+# ----------------------------------------------------------------- end-of-file

@@ -1,0 +1,105 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.2.2                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+convertToMeters 1;
+
+// Domain bounds (based on STL geometry + clearance)
+// Geometry: X:[-69.06, 82.09], Y:[-155.27, 148.77], Z:[133.11, 208.34]
+// H = 75.23 m
+// Domain: X:[-445.21, 1210.54], Y:[-531.42, 524.92], Z:[133.11, 584.49]
+
+vertices
+(
+    (-445.21 -531.42 133.11)   // 0: min-x, min-y, min-z
+    (1210.54 -531.42 133.11)   // 1: max-x, min-y, min-z
+    (1210.54 524.92 133.11)    // 2: max-x, max-y, min-z
+    (-445.21 524.92 133.11)    // 3: min-x, max-y, min-z
+    (-445.21 -531.42 584.49)   // 4: min-x, min-y, max-z
+    (1210.54 -531.42 584.49)   // 5: max-x, min-y, max-z
+    (1210.54 524.92 584.49)    // 6: max-x, max-y, max-z
+    (-445.21 524.92 584.49)    // 7: min-x, max-y, max-z
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7)
+    (
+        332    // X: 1655.76 m / 5.0 m = 331.15 -> 332 cells
+        212    // Y: 1056.34 m / 5.0 m = 211.27 -> 212 cells
+        91     // Z: 451.38 m / 5.0 m = 90.28 -> 91 cells
+    )
+    simpleGrading (1 1 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    inlet
+    {
+        type patch;
+        faces
+        (
+            (0 4 7 3)
+        );
+    }
+    
+    outlet
+    {
+        type patch;
+        faces
+        (
+            (1 2 6 5)
+        );
+    }
+    
+    sides
+    {
+        type patch;
+        faces
+        (
+            (0 1 5 4)  // bottom side
+            (3 7 6 2)  // top side
+        );
+    }
+    
+    ground
+    {
+        type wall;
+        faces
+        (
+            (0 3 2 1)
+        );
+    }
+    
+    top
+    {
+        type patch;
+        faces
+        (
+            (4 5 6 7)
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //
+

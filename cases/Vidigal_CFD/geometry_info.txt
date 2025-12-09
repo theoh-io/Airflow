@@ -1,0 +1,32 @@
+# Vidigal_CFD Geometry Information
+# Generated from STL analysis
+
+## STL Geometry Bounds
+X-direction: [-69.06, 82.09]  (length: 151.16 m)
+Y-direction: [-155.27, 148.77]  (width:  304.04 m)
+Z-direction: [133.11, 208.34]  (height: 75.23 m)
+
+## Key Parameters
+Maximum Height (H): 75.23 m
+
+## Domain Boundaries (based on H)
+Inlet (before):    5*H = 376.15 m
+Outlet (after):   15*H = 1128.45 m
+Sides (each):      5*H = 376.15 m  (total: 10*H = 752.30 m)
+Top (above):       5*H = 376.15 m
+
+## Computational Domain Bounds
+X: [-445.21, 1210.54]
+Y: [-531.42, 524.92]
+Z: [133.11, 584.49]
+
+## Domain Dimensions
+Length (X): 1655.76 m
+Width  (Y): 1056.34 m
+Height (Z): 451.38 m
+
+## Mesh Parameters
+Smallest feature: 1.0 m
+Surface cell size: 1.0 m
+Background cell size: 5.0 m
+

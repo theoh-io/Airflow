@@ -1,0 +1,53 @@
+# Build artifacts
+build/
+*.o
+*.dep
+Make/linux*/
+Make/darwin*/
+
+# OpenFOAM case files (mesh, results, logs)
+cases/*/constant/polyMesh/
+cases/*/constant/*/polyMesh/
+cases/*/[0-9]*/
+cases/*/processor*/
+cases/*/*.log
+cases/*/*.foam
+cases/*/log.*
+
+# Custom cases - exclude results but keep config
+custom_cases/*/[0-9]*/
+custom_cases/*/processor*/
+custom_cases/*/*.log
+custom_cases/*/stats_*.csv
+custom_cases/*/images/
+custom_cases/*/*.foam
+
+# Solver build artifacts
+src/*/Make/linux*/
+src/*/Make/darwin*/
+
+# Temporary files
+*.tmp
+*.bak
+*~
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# AI context files
+.claude.md
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Test output (if generated)
+# Uncomment if test scripts generate output:
+# test_*.log
+
