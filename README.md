@@ -4,6 +4,12 @@ OpenFOAM 8 solver for microclimate simulations (wind, temperature around buildin
 
 ## Quick Start
 
+> **Note**: This repository uses [Git LFS](https://git-lfs.github.com/) for STL geometry files. Ensure Git LFS is installed before cloning:
+> ```bash
+> git lfs install  # If not already installed
+> git clone <repo-url>
+> ```
+
 ### Using Docker Compose (recommended)
 ```bash
 # Build and start dev environment

@@ -86,6 +86,7 @@ The tutorial cases in `cases/` were originally cloned from [OpenFOAM-BuildingPhy
 - Case configuration files (`system/`, `constant/` configs, `0/` initial conditions)
 - Custom scripts and documentation
 - Custom cases like `Vidigal_CFD/`
+- **STL geometry files**: Tracked using Git LFS (see [Large File Handling](#large-file-handling) below)
 
 **What's Excluded:**
 - Simulation results (`[0-9]*/` time directories)
@@ -100,6 +101,42 @@ Similar to the solver, tutorial cases could be migrated to a git submodule in th
 ### Custom Solver
 
 The `microClimateFoam` solver in `src/microClimateFoam/` is a custom solver developed for this project and should remain directly in the repository.
+
+## Large File Handling
+
+### STL Geometry Files
+
+STL (Stereolithography) files are 3D geometry files used in OpenFOAM cases for defining complex geometries. These files can range from ~500KB to several MB.
+
+**Current Approach: Git LFS**
+
+All STL files (`.stl` and `.STL`) are tracked using [Git LFS](https://git-lfs.github.com/) to ensure efficient repository management:
+
+- ✅ **Efficient storage**: Large binary files are stored separately, keeping the main repository lightweight
+- ✅ **Faster clones**: Only LFS pointer files are downloaded initially; actual files are fetched on demand
+- ✅ **Version control**: Full history is maintained without bloating the repository
+
+**Configuration:**
+- `.gitattributes` file configures Git LFS for `*.stl` and `*.STL` files
+- Git LFS must be installed on systems cloning the repository
+- Files are automatically handled by Git LFS when added to the repository
+
+**For Contributors:**
+```bash
+# Ensure Git LFS is installed
+git lfs install
+
+# Clone with LFS files (automatic with standard clone)
+git clone <repo-url>
+
+# If LFS files weren't downloaded, fetch them:
+git lfs pull
+```
+
+**File Sizes:**
+Current STL files in the repository range from ~500KB to ~1MB. All are managed via Git LFS regardless of size to maintain consistency and prepare for potentially larger files in the future.
+
+**Note:** If you need to add very large STL files (>10MB), ensure Git LFS is properly configured and that your Git hosting service (GitHub, GitLab, etc.) supports Git LFS with sufficient quota.
 
 ## Summary
 
