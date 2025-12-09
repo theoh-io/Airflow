@@ -8,11 +8,14 @@ Make/darwin*/
 # OpenFOAM case files (mesh, results, logs)
 cases/*/constant/polyMesh/
 cases/*/constant/*/polyMesh/
+cases/*/constant/*/polyMesh.backup*/
 cases/*/[0-9]*/
 cases/*/processor*/
 cases/*/*.log
 cases/*/*.foam
 cases/*/log.*
+cases/*/images/
+cases/*/postProcessing/
 
 # Custom cases - exclude results but keep config
 custom_cases/*/[0-9]*/

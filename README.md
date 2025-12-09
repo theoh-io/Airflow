@@ -57,12 +57,14 @@ wmake
 │   │   └── Make/
 │   └── urbanMicroclimateFoam/     # urbanMicroclimateFoam solver (Allwmake build)
 │       └── (cloned from OpenFOAM-BuildingPhysics/urbanMicroclimateFoam)
+│       └── See docs/DEPENDENCY_MANAGEMENT.md for dependency management approach
 ├── custom_cases/                  # Custom validation/test cases
 │   └── heatedCavity/             # microClimateFoam validation case
-├── cases/                         # Tutorial cases (from urbanMicroclimateFoam-tutorials)
+├── cases/                         # Tutorial cases (from urbanMicroclimateFoam-tutorials) + custom cases
 │   ├── streetCanyon_CFD/         # Street canyon CFD
 │   ├── streetCanyon_CFDHAM/      # Street canyon with HAM
 │   ├── windAroundBuildings_CFDHAM/ # Wind around buildings
+│   ├── Vidigal_CFD/              # Custom case: STL-based geometry (created for this project)
 │   └── ... (6 tutorial cases total)
 ├── scripts/                       # Helper scripts
 │   ├── build_all_solvers.sh      # Build all solvers
@@ -395,6 +397,7 @@ See `docs/roadmap.md` for integration status and `docs/INTEGRATION_NOTES.md` for
 - `docs/visualization.md`: complete visualization guide with platform-specific instructions.
 - `docs/BUILD_CACHING.md`: build and mesh caching system documentation.
 - `docs/quick_start.md`: quick start guide for running cases.
+- `docs/DEPENDENCY_MANAGEMENT.md`: dependency management approach and future recommendations.
 - `docs/SOLVER_COMPARISON.md`: comprehensive comparison of both solvers.
 - `docs/SOLVERS/`: solver-specific documentation.
   - `docs/SOLVERS/microClimateFoam.md`: microClimateFoam solver documentation.

@@ -1,20 +1,45 @@
-# urbanMicroclimateFoam
+# Cases Directory
 
-An open-source solver for coupled physical processes modeling urban microclimate based on OpenFOAM.
+This directory contains OpenFOAM cases for the `urbanMicroclimateFoam` solver.
 
-Source code for the solver code can be downloaded from [here](https://github.com/OpenFOAM-BuildingPhysics/urbanMicroclimateFoam)
+## Contents
 
-The solver is tested for the following OpenFOAM versions:
+### Tutorial Cases
 
-* OpenFOAM-org (OpenFOAM Foundation) v6, v7, v8
+The following tutorial cases are included from [OpenFOAM-BuildingPhysics/urbanMicroclimateFoam-tutorials](https://github.com/OpenFOAM-BuildingPhysics/urbanMicroclimateFoam-tutorials) (tag `of-org_v8.0`):
 
-### Usage
+- `streetCanyon_CFD/` - Street canyon CFD simulation
+- `streetCanyon_CFDHAM/` - Street canyon with Heat and Moisture (HAM) transport
+- `streetCanyon_CFDHAM_grass/` - Street canyon with HAM and grass surface
+- `streetCanyon_CFDHAM_veg/` - Street canyon with HAM and vegetation
+- `windAroundBuildings_CFDHAM/` - Wind flow around buildings with HAM
+- `windAroundBuildings_CFDHAM_veg/` - Wind flow around buildings with HAM and vegetation
 
-You can use the tutorial cases for a specific OpenFOAM version by checking out the commit with corresponding tag. For example, for OpenFOAM v8:
+### Custom Cases
 
-    git clone https://github.com/OpenFOAM-BuildingPhysics/urbanMicroclimateFoam-tutorials.git
-    cd urbanmicroclimatefoam-tutorial
-    git checkout tags/of-org_v8.0
+- `Vidigal_CFD/` - Custom case using STL-based geometry (created for this project)
 
-See the list of tags for different versions [here](https://github.com/OpenFOAM-BuildingPhysics/urbanMicroclimateFoam-tutorials/tags)
+## Solver Requirements
+
+All cases require the `urbanMicroclimateFoam` solver, which is included in this project at `src/urbanMicroclimateFoam/`.
+
+**OpenFOAM Version**: OpenFOAM 8 (of-org_v8.0)
+
+## Usage
+
+See the main project [README.md](../README.md) for instructions on:
+- Building the solver
+- Running cases
+- Generating visualizations
+
+## Dependency Management
+
+These cases were originally cloned from the upstream repository but are now directly included in this project. See `docs/DEPENDENCY_MANAGEMENT.md` for details on the dependency management approach and future recommendations.
+
+## Original Source
+
+The tutorial cases were originally from:
+- **Repository**: [OpenFOAM-BuildingPhysics/urbanMicroclimateFoam-tutorials](https://github.com/OpenFOAM-BuildingPhysics/urbanMicroclimateFoam-tutorials)
+- **Version/Tag**: `of-org_v8.0`
+- **Solver**: [OpenFOAM-BuildingPhysics/urbanMicroclimateFoam](https://github.com/OpenFOAM-BuildingPhysics/urbanMicroclimateFoam)
 

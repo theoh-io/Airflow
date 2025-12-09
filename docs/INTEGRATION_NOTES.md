@@ -17,6 +17,8 @@ git checkout tags/of-org_v8.0
 
 **Status:** ✅ Solver cloned and builds successfully
 
+**Note:** The solver is currently included directly in the repository. See `docs/DEPENDENCY_MANAGEMENT.md` for details on the current approach and future recommendations for using git submodules.
+
 ### 2. ✅ Reorganized Case Structure
 
 ```bash
@@ -123,4 +125,5 @@ Update `.github/workflows/ci.yml` to:
 - `microClimateFoam` uses `wmake` for building
 - Cases should be organized by solver or category
 - Update all documentation references from `cases/` to `custom_cases/` for custom cases
+- **Dependency Management**: `urbanMicroclimateFoam` is currently included directly in the repo. See `docs/DEPENDENCY_MANAGEMENT.md` for the current approach and future submodule recommendations.
 
