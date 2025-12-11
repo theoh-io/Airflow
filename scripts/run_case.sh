@@ -214,9 +214,15 @@ if [ "$RUN_IN_DOCKER" = false ]; then
 fi
 
 # Running inside Docker from here
+# OpenFOAM bashrc executes diagnostic pipelines that can return 1; temporarily
+# relax -e/pipefail while sourcing, then restore.
+set +e
+set +o pipefail
 set +u  # Temporarily disable for bashrc
 source /opt/openfoam8/etc/bashrc
 set -u
+set -e
+set -o pipefail
 
 cd /workspace
 
@@ -277,6 +283,11 @@ if [ -f "constant/regionProperties" ]; then
   MULTI_REGION=true
   # Get first region (typically 'air')
   PRIMARY_REGION=$(grep -A 10 "^regions" constant/regionProperties 2>/dev/null | grep -E "^\s+[a-zA-Z]" | head -1 | awk '{print $1}' | tr -d '();' || echo "air")
+  # If the first token is a group name (e.g., 'fluid') but an 'air' region
+  # directory exists, prefer 'air' as the primary region to match mesh layout.
+  if [ "$PRIMARY_REGION" = "fluid" ] && [ -d "constant/air" ]; then
+    PRIMARY_REGION="air"
+  fi
 elif [ -d "0" ]; then
   # Check if 0/ contains region directories
   REGIONS=$(find 0 -maxdepth 1 -type d ! -name "0" ! -name "polyMesh" ! -name "include" 2>/dev/null | sed 's|0/||' | head -1)

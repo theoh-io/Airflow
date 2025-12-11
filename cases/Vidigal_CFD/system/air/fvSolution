@@ -75,15 +75,15 @@ relaxationFactors
     fields
     {
         rho             1.0;
-        p_rgh           0.5;
+        p_rgh           0.3;
     }
     equations
     {
-        U               0.7;
-        "(h|e)"         0.9;
+        U               0.5;
+        "(h|e)"         0.3;
         k               0.5;
         epsilon         0.5;
-        w               0.9;
+        w               0.7;
     }
 }
 

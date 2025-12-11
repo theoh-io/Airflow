@@ -82,7 +82,7 @@ def is_3d_case(bounds, case_path=None):
     # First check known cases (most reliable)
     if case_path:
         case_name = os.path.basename(case_path)
-        known_3d_cases = ['streetCanyon_CFD', 'streetcanyon']
+        known_3d_cases = ['streetCanyon_CFD', 'streetcanyon', 'Vidigal_CFD', 'vidigal']
         known_2d_cases = ['heatedCavity', 'heatedcavity']
         
         if any(name.lower() in case_name.lower() for name in known_3d_cases):
@@ -122,9 +122,17 @@ def get_domain_bounds_and_center(source, case_path=None):
         source.UpdatePipeline()
         
         # Create a temporary slice to force data loading
+        # Try to get better initial guess from case_path if available
+        initial_guess = [100.0, 100.0, 30.0]  # Default guess
+        if case_path:
+            case_name = os.path.basename(case_path)
+            if 'Vidigal' in case_name or 'vidigal' in case_name:
+                # Vidigal_CFD domain center approximation
+                initial_guess = [382.67, -3.25, 358.80]
+        
         temp_slice = pv.Slice(Input=source)
         temp_slice.SliceType = 'Plane'
-        temp_slice.SliceType.Origin = [100.0, 100.0, 30.0]  # Reasonable guess
+        temp_slice.SliceType.Origin = initial_guess
         temp_slice.SliceType.Normal = [0.0, 0.0, 1.0]
         temp_slice.UpdatePipeline()
         
@@ -164,6 +172,34 @@ def get_domain_bounds_and_center(source, case_path=None):
     # Method 2: Try reading from case directory if provided
     if case_path:
         try:
+            # Try to read bounds from geometry_info.txt if available
+            geometry_info_path = os.path.join(case_path, 'geometry_info.txt')
+            if os.path.exists(geometry_info_path):
+                try:
+                    with open(geometry_info_path, 'r') as f:
+                        content = f.read()
+                        # Parse domain bounds from geometry_info.txt
+                        # Format: X: [-445.21, 1210.54]
+                        import re
+                        x_match = re.search(r'X:\s*\[([-\d.]+),\s*([-\d.]+)\]', content)
+                        y_match = re.search(r'Y:\s*\[([-\d.]+),\s*([-\d.]+)\]', content)
+                        z_match = re.search(r'Z:\s*\[([-\d.]+),\s*([-\d.]+)\]', content)
+                        if x_match and y_match and z_match:
+                            bounds = [
+                                float(x_match.group(1)), float(x_match.group(2)),  # X
+                                float(y_match.group(1)), float(y_match.group(2)),  # Y
+                                float(z_match.group(1)), float(z_match.group(2))   # Z
+                            ]
+                            center = [
+                                (bounds[0] + bounds[1]) / 2.0,
+                                (bounds[2] + bounds[3]) / 2.0,
+                                (bounds[4] + bounds[5]) / 2.0
+                            ]
+                            print("  Using bounds from geometry_info.txt")
+                            return (bounds, center)
+                except:
+                    pass
+            
             # Try to read bounds from checkMesh output or mesh files
             # This is a fallback - we'll use known defaults for common cases
             case_name = os.path.basename(case_path)
@@ -173,6 +209,7 @@ def get_domain_bounds_and_center(source, case_path=None):
             known_bounds = {
                 'streetCanyon_CFD': ([0, 230, 0, 250, 0, 60], [115, 125, 30]),
                 'heatedCavity': ([0, 1, 0, 1, 0, 0.01], [0.5, 0.5, 0.005]),
+                'Vidigal_CFD': ([-445.21, 1210.54, -531.42, 524.92, 133.11, 584.49], [382.67, -3.25, 358.80]),
             }
             
             # Also check if case name contains these strings (for variations)
@@ -316,6 +353,121 @@ def get_data_range_legacy(source, array_name):
     """Legacy function for backward compatibility."""
     return get_data_range(source, array_name, use_points=False)
 
+def load_stl_geometry(case_path, renderView):
+    """
+    Helper function to load and display STL geometry.
+    
+    Args:
+        case_path: Case directory path
+        renderView: ParaView render view
+    
+    Returns:
+        (stl_reader, stl_display, stl_bounds) or (None, None, None) if not found
+    """
+    stl_reader = None
+    stl_display = None
+    stl_bounds = None
+    
+    if not case_path:
+        return (None, None, None)
+    
+    stl_path = os.path.join(case_path, 'constant', 'triSurface', 'vidigal.stl')
+    if not os.path.exists(stl_path):
+        # Try to find any STL file
+        tri_surface_dir = os.path.join(case_path, 'constant', 'triSurface')
+        if os.path.isdir(tri_surface_dir):
+            for f in os.listdir(tri_surface_dir):
+                if f.endswith('.stl'):
+                    stl_path = os.path.join(tri_surface_dir, f)
+                    break
+    
+    if os.path.exists(stl_path):
+        try:
+            stl_reader = pv.STLReader(FileNames=[stl_path])
+            stl_reader.UpdatePipeline()
+            
+            # Get STL bounds
+            stl_info = stl_reader.GetDataInformation()
+            if stl_info:
+                stl_bounds = stl_info.GetBounds()
+            
+            # Display STL as solid surface
+            stl_display = pv.Show(stl_reader, renderView)
+            stl_display.Representation = 'Surface'
+            stl_display.Opacity = 1.0
+            stl_display.DiffuseColor = [0.85, 0.80, 0.75]  # Light beige
+            stl_display.AmbientColor = [0.3, 0.3, 0.3]
+            stl_display.SpecularColor = [1.0, 1.0, 1.0]
+            stl_display.SpecularPower = 30.0
+            stl_display.Ambient = 0.3
+            stl_display.Diffuse = 0.7
+            stl_display.Specular = 0.2
+            
+            # Render STL on top
+            try:
+                stl_display.SetRenderOrder(1)
+            except:
+                pass
+            
+            return (stl_reader, stl_display, stl_bounds)
+        except Exception as e:
+            print("  [WARN] Could not load STL: {}".format(str(e)))
+            return (None, None, None)
+    
+    return (None, None, None)
+
+def add_bounding_box_wireframe(bounds, renderView):
+    """
+    Add a wireframe bounding box to show geometry or domain boundaries.
+    
+    Typically used to display STL geometry bounds, with fallback to domain bounds.
+    
+    Args:
+        bounds: List of 6 values [x_min, x_max, y_min, y_max, z_min, z_max]
+        renderView: ParaView render view
+    
+    Returns:
+        box_source object or None if bounds invalid
+    """
+    if not bounds or len(bounds) < 6:
+        return None
+    
+    try:
+        x_min, x_max = bounds[0], bounds[1]
+        y_min, y_max = bounds[2], bounds[3]
+        z_min, z_max = bounds[4], bounds[5]
+        
+        # Create a box source for the bounding box
+        box_source = pv.Box()
+        box_source.XLength = abs(x_max - x_min)
+        box_source.YLength = abs(y_max - y_min)
+        box_source.ZLength = abs(z_max - z_min)
+        box_source.Center = [
+            (x_min + x_max) / 2.0,
+            (y_min + y_max) / 2.0,
+            (z_min + z_max) / 2.0
+        ]
+        box_source.UpdatePipeline()
+        
+        # Display as wireframe
+        box_display = pv.Show(box_source, renderView)
+        box_display.Representation = 'Wireframe'
+        box_display.LineWidth = 1.5
+        box_display.Opacity = 0.8
+        box_display.Color = [0.5, 0.5, 0.5]  # Gray wireframe
+        box_display.DiffuseColor = [0.5, 0.5, 0.5]
+        
+        # Render bounding box first (behind everything)
+        try:
+            box_display.SetRenderOrder(0)
+        except:
+            pass
+        
+        return box_source
+    except Exception as e:
+        print("  [WARN] Could not create bounding box: {}".format(str(e)))
+        return None
+
 def create_temperature_slice(reader, output_path, width=1200, height=800, case_path=None):
     """
     Create a temperature contour slice visualization.
@@ -352,9 +504,27 @@ def create_temperature_slice(reader, output_path, width=1200, height=800, case_p
     renderView.ViewSize = [width, height]
     renderView.Background = [0.32, 0.34, 0.43]  # Dark gray background for better contrast
     
-    # Display slice
+    # Load STL geometry as base (if available)
+    stl_reader, stl_display, stl_bounds = load_stl_geometry(case_path, renderView)
+    if stl_reader:
+        print("  STL geometry loaded as base")
+    
+    # Add bounding box wireframe to show geometry boundaries (use STL bounds if available)
+    bounding_box = None
+    if stl_bounds and len(stl_bounds) >= 6:
+        bounding_box = add_bounding_box_wireframe(stl_bounds, renderView)
+        if bounding_box:
+            print("  Geometry bounding box wireframe added")
+    elif bounds and len(bounds) >= 6:
+        # Fallback to domain bounds if STL not available
+        bounding_box = add_bounding_box_wireframe(bounds, renderView)
+        if bounding_box:
+            print("  Domain bounding box wireframe added")
+    
+    # Display slice - make it translucent so STL shows through
     sliceDisplay = pv.Show(slice1, renderView)
     sliceDisplay.Representation = 'Surface'
+    sliceDisplay.Opacity = 0.6  # Translucent to show STL geometry
     
     # T is a cell array in OpenFOAM, try CELLS first, then POINTS
     try:
@@ -433,6 +603,10 @@ def create_temperature_slice(reader, output_path, width=1200, height=800, case_p
     
     # Clean up
     pv.Delete(slice1)
+    if bounding_box:
+        pv.Delete(bounding_box)
+    if stl_reader:
+        pv.Delete(stl_reader)
     pv.Delete(renderView)
     
     return output_path
@@ -476,9 +650,27 @@ def create_temperature_slice_vertical(reader, output_path, width=1200, height=80
     renderView.ViewSize = [width, height]
     renderView.Background = [0.32, 0.34, 0.43]  # Dark gray background
     
-    # Display slice
+    # Load STL geometry as base (if available)
+    stl_reader, stl_display, stl_bounds = load_stl_geometry(case_path, renderView)
+    if stl_reader:
+        print("  STL geometry loaded as base")
+    
+    # Add bounding box wireframe to show geometry boundaries (use STL bounds if available)
+    bounding_box = None
+    if stl_bounds and len(stl_bounds) >= 6:
+        bounding_box = add_bounding_box_wireframe(stl_bounds, renderView)
+        if bounding_box:
+            print("  Geometry bounding box wireframe added")
+    elif bounds and len(bounds) >= 6:
+        # Fallback to domain bounds if STL not available
+        bounding_box = add_bounding_box_wireframe(bounds, renderView)
+        if bounding_box:
+            print("  Domain bounding box wireframe added")
+    
+    # Display slice - make it translucent so STL shows through
     sliceDisplay = pv.Show(slice1, renderView)
     sliceDisplay.Representation = 'Surface'
+    sliceDisplay.Opacity = 0.6  # Translucent to show STL geometry
     
     # T is a cell array in OpenFOAM, try CELLS first, then POINTS
     try:
@@ -581,6 +773,10 @@ def create_temperature_slice_vertical(reader, output_path, width=1200, height=80
     
     # Clean up
     pv.Delete(slice1)
+    if bounding_box:
+        pv.Delete(bounding_box)
+    if stl_reader:
+        pv.Delete(stl_reader)
     pv.Delete(renderView)
     
     return output_path
@@ -611,6 +807,23 @@ def create_isometric_3d_view(reader, output_path, width=1200, height=800, case_p
     renderView.ViewSize = [width, height]
     renderView.Background = [0.32, 0.34, 0.43]  # Dark gray background
     
+    # Load STL geometry as base (if available)
+    stl_reader, stl_display, stl_bounds = load_stl_geometry(case_path, renderView)
+    if stl_reader:
+        print("  STL geometry loaded as base")
+    
+    # Add bounding box wireframe to show geometry boundaries (use STL bounds if available)
+    bounding_box = None
+    if stl_bounds and len(stl_bounds) >= 6:
+        bounding_box = add_bounding_box_wireframe(stl_bounds, renderView)
+        if bounding_box:
+            print("  Geometry bounding box wireframe added")
+    elif bounds and len(bounds) >= 6:
+        # Fallback to domain bounds if STL not available
+        bounding_box = add_bounding_box_wireframe(bounds, renderView)
+        if bounding_box:
+            print("  Domain bounding box wireframe added")
+    
     # Display the full mesh (or use a representative slice with transparency)
     # For better visualization, we'll use a slice with some transparency
     slice1 = pv.Slice(Input=reader)
@@ -619,10 +832,10 @@ def create_isometric_3d_view(reader, output_path, width=1200, height=800, case_p
     slice1.SliceType.Normal = [0.0, 0.0, 1.0]  # Horizontal slice
     slice1.UpdatePipeline()
     
-    # Display slice with transparency to show 3D structure
+    # Display slice with transparency to show STL geometry
     sliceDisplay = pv.Show(slice1, renderView)
     sliceDisplay.Representation = 'Surface'
-    sliceDisplay.Opacity = 0.7  # Semi-transparent
+    sliceDisplay.Opacity = 0.6  # Translucent to show STL geometry
     
     # Color by temperature
     try:
@@ -716,6 +929,10 @@ def create_isometric_3d_view(reader, output_path, width=1200, height=800, case_p
     
     # Clean up
     pv.Delete(slice1)
+    if bounding_box:
+        pv.Delete(bounding_box)
+    if stl_reader:
+        pv.Delete(stl_reader)
     pv.Delete(renderView)
     
     return output_path
@@ -752,48 +969,103 @@ def create_geometry_3d_view(reader, output_path, width=1200, height=800, case_pa
     # Strategy: Clip volume to keep interior region, then extract surfaces
     # Keep: Internal surfaces (walls/buildings) and ground (Z=0)
     
-    # Use a small buffer to exclude exact boundary surfaces (inlet/outlet/top)
-    buffer = 0.5  # 50cm buffer - removes inlet/outlet/top but preserves walls
-    
     # Get domain bounds
     if not bounds or len(bounds) < 6:
-        # Fallback bounds for streetCanyon_CFD
-        x_min, x_max = 0.0, 230.0
-        y_min, y_max = 0.0, 250.0
-        z_min, z_max = 0.0, 60.0
+        # Try to get from case_path
+        if case_path:
+            case_name = os.path.basename(case_path)
+            if 'Vidigal' in case_name or 'vidigal' in case_name:
+                # Vidigal_CFD bounds
+                x_min, x_max = -445.21, 1210.54
+                y_min, y_max = -531.42, 524.92
+                z_min, z_max = 133.11, 584.49
+            else:
+                # Fallback bounds for streetCanyon_CFD
+                x_min, x_max = 0.0, 230.0
+                y_min, y_max = 0.0, 250.0
+                z_min, z_max = 0.0, 60.0
+        else:
+            # Fallback bounds for streetCanyon_CFD
+            x_min, x_max = 0.0, 230.0
+            y_min, y_max = 0.0, 250.0
+            z_min, z_max = 0.0, 60.0
     else:
         x_min, x_max = bounds[0], bounds[1]
         y_min, y_max = bounds[2], bounds[3]
         z_min, z_max = bounds[4], bounds[5]
     
-    # Clip volume to keep interior region (excludes inlet/outlet/top)
-    # Keep: X: buffer to x_max-buffer, Y: full range, Z: z_min to z_max-buffer
-    clip_volume = pv.Clip(Input=reader)
-    clip_volume.ClipType = 'Box'
-    clip_volume.ClipType.Bounds = [
-        x_min + buffer, x_max - buffer,  # X: exclude boundaries
-        y_min, y_max,                     # Y: keep full range
-        z_min, z_max - buffer             # Z: exclude top, keep ground
-    ]
-    clip_volume.Invert = 0  # Keep inside the box
-    clip_volume.UpdatePipeline()
+    # Calculate adaptive buffer based on domain size
+    # For large domains (like Vidigal_CFD), use percentage-based buffer
+    x_size = abs(x_max - x_min)
+    y_size = abs(y_max - y_min)
+    z_size = abs(z_max - z_min)
+    max_size = max(x_size, y_size, z_size)
     
-    # Step 2: Extract surfaces from the clipped volume
-    # This gives us walls/buildings and ground, but not inlet/outlet/top
-    extractSurface = pv.ExtractSurface(Input=clip_volume)
-    extractSurface.UpdatePipeline()
+    # Adaptive buffer: 1% of domain size, but at least 0.5m and at most 50m
+    buffer = max(0.5, min(max_size * 0.01, 50.0))
+    print("  Using adaptive buffer: {:.2f} m (domain size: {:.2f} m)".format(buffer, max_size))
     
-    # Result: filteredSurface contains walls/buildings and ground, inlet/outlet/top removed
-    filteredSurface = extractSurface
+    # Method 1: Try patch-based extraction (more precise)
+    # Extract only the "ground" patch explicitly
+    try:
+        # Enable patch selection in reader
+        reader.EnablePatches = 1
+        reader.UpdatePipeline()
+        
+        # Try to extract only ground patch using ExtractBlock
+        # This is more precise than clipping
+        extractBlock = pv.ExtractBlock(Input=reader)
+        # We'll filter by patch name - but ParaView might need patch indices
+        # For now, use clipping approach but with better buffer
+        
+        # Use clipping with adaptive buffer
+        clip_volume = pv.Clip(Input=reader)
+        clip_volume.ClipType = 'Box'
+        clip_volume.ClipType.Bounds = [
+            x_min + buffer, x_max - buffer,  # X: exclude boundaries
+            y_min + buffer, y_max - buffer,  # Y: exclude side boundaries
+            z_min, z_max - buffer             # Z: exclude top, keep ground
+        ]
+        clip_volume.Invert = 0  # Keep inside the box
+        clip_volume.UpdatePipeline()
+        
+        # Extract surfaces from clipped volume
+        extractSurface = pv.ExtractSurface(Input=clip_volume)
+        extractSurface.UpdatePipeline()
+        filteredSurface = extractSurface
+        
+    except:
+        # Fallback: use clipping approach
+        clip_volume = pv.Clip(Input=reader)
+        clip_volume.ClipType = 'Box'
+        clip_volume.ClipType.Bounds = [
+            x_min + buffer, x_max - buffer,
+            y_min + buffer, y_max - buffer,
+            z_min, z_max - buffer
+        ]
+        clip_volume.Invert = 0
+        clip_volume.UpdatePipeline()
+        
+        extractSurface = pv.ExtractSurface(Input=clip_volume)
+        extractSurface.UpdatePipeline()
+        filteredSurface = extractSurface
     
-    # Display filtered surfaces - highly transparent to see canyon interior clearly
-    # Temperature is shown ONLY on surfaces (walls/buildings/ground), not volume
-    # High transparency allows clear view of streamlines inside the canyon
+    # Display filtered surfaces - adjust opacity based on case
+    # For large domains (Vidigal_CFD), use lower opacity to see through boundaries
+    # For smaller domains, use higher opacity
+    if max_size > 500:  # Large domain like Vidigal_CFD
+        surface_opacity = 0.5  # More opaque for large domains
+        edge_opacity = 0.8  # Stronger edges
+    else:
+        surface_opacity = 0.3  # More transparent for small domains
+        edge_opacity = 1.0
+    
     surfaceDisplay = pv.Show(filteredSurface, renderView)
     surfaceDisplay.Representation = 'Surface'
-    surfaceDisplay.Opacity = 0.3  # Highly transparent: clear view of canyon interior and streamlines
-    # Use edge highlighting to maintain geometry visibility even with high transparency
+    surfaceDisplay.Opacity = surface_opacity
+    # Use edge highlighting to maintain geometry visibility
     surfaceDisplay.EdgeColor = [0.0, 0.0, 0.0]  # Black edges for definition
+    # Note: EdgeOpacity not available in ParaView, using edge color only
     
     # Color surfaces by temperature
     try:
@@ -848,11 +1120,17 @@ def create_geometry_3d_view(reader, output_path, width=1200, height=800, case_pa
     # Create line source for seed points
     line1 = pv.Line()
     if bounds and len(bounds) >= 6:
-        # Seed line: from one side to the other, at mid-height
-        line1.Point1 = [x_min + buffer, y_min, center[2]]
-        line1.Point2 = [x_max - buffer, y_max, center[2]]
-        # Use multiple seed points for better coverage
-        line1.Resolution = 15
+        # Seed line: from inlet side, across domain, at mid-height
+        # For Vidigal_CFD, seed from inlet (x_min) to interior
+        if max_size > 500:  # Large domain
+            # Multiple seed lines for better coverage
+            line1.Point1 = [x_min + buffer * 2, y_min + buffer, center[2]]
+            line1.Point2 = [x_min + buffer * 2, y_max - buffer, center[2]]
+            line1.Resolution = 20  # More seed points for large domain
+        else:
+            line1.Point1 = [x_min + buffer, y_min, center[2]]
+            line1.Point2 = [x_max - buffer, y_max, center[2]]
+            line1.Resolution = 15
     else:
         line1.Point1 = [0.5, 0.0, center[2]]
         line1.Point2 = [229.5, 250.0, center[2]]
@@ -870,10 +1148,17 @@ def create_geometry_3d_view(reader, output_path, width=1200, height=800, case_pa
     # Adaptive streamline length based on domain size
     x_size, y_size, z_size, char_length = get_domain_size(clip_volume)
     if char_length and char_length > 0:
-        max_length = max(char_length * 0.5, 10.0)  # 50% of characteristic length, min 10m
-        max_length = min(max_length, 500.0)  # Cap at 500m
+        if max_size > 500:  # Large domain like Vidigal_CFD
+            max_length = max(char_length * 0.3, 50.0)  # 30% of length, min 50m
+            max_length = min(max_length, 1000.0)  # Cap at 1000m for large domains
+        else:
+            max_length = max(char_length * 0.5, 10.0)  # 50% of length, min 10m
+            max_length = min(max_length, 500.0)  # Cap at 500m
     else:
-        max_length = 100.0
+        if max_size > 500:
+            max_length = 500.0
+        else:
+            max_length = 100.0
     
     streamTracer1.MaximumStreamlineLength = max_length
     streamTracer1.IntegrationDirection = 'BOTH'
@@ -1001,7 +1286,333 @@ def create_geometry_3d_view(reader, output_path, width=1200, height=800, case_pa
     pv.Delete(streamTracer1)
     pv.Delete(line1)
     pv.Delete(filteredSurface)
+    if clip_volume:
+        pv.Delete(clip_volume)
+    pv.Delete(renderView)
+    
+    return output_path
+
+
+def create_geometry_focused_view(reader, output_path, width=1200, height=800, case_path=None):
+    """
+    Create a geometry-focused visualization with STL as the primary element.
+    The STL building geometry is displayed prominently with flow field around it.
+    
+    Args:
+        reader: ParaView OpenFOAM reader object
+        output_path: Path to save the image
+        width: Image width in pixels
+        height: Image height in pixels
+        case_path: Optional case directory path for bounds and STL location
+    """
+    # Get domain bounds and center
+    bounds, center = get_domain_bounds_and_center(reader, case_path)
+    if center is None:
+        center = [0.5, 0.5, 0.005]
+        print("  [WARN] Using default center for geometry view")
+    else:
+        print("  Using domain center: [{:.2f}, {:.2f}, {:.2f}]".format(*center))
+    
+    # Create render view
+    renderView = pv.CreateView('RenderView')
+    renderView.ViewSize = [width, height]
+    renderView.Background = [0.32, 0.34, 0.43]  # Dark gray background
+    
+    # Step 1: Load STL geometry as the PRIMARY element
+    stl_reader = None
+    stl_display = None
+    stl_bounds = None
+    
+    if case_path:
+        stl_path = os.path.join(case_path, 'constant', 'triSurface', 'vidigal.stl')
+        if not os.path.exists(stl_path):
+            # Try to find any STL file
+            tri_surface_dir = os.path.join(case_path, 'constant', 'triSurface')
+            if os.path.isdir(tri_surface_dir):
+                for f in os.listdir(tri_surface_dir):
+                    if f.endswith('.stl'):
+                        stl_path = os.path.join(tri_surface_dir, f)
+                        break
+        
+        if os.path.exists(stl_path):
+            try:
+                print("  Loading STL geometry: {}".format(os.path.basename(stl_path)))
+                stl_reader = pv.STLReader(FileNames=[stl_path])
+                stl_reader.UpdatePipeline()
+                
+                # Get STL bounds for camera positioning
+                stl_info = stl_reader.GetDataInformation()
+                if stl_info:
+                    stl_bounds = stl_info.GetBounds()
+                    if stl_bounds:
+                        print("  STL bounds: X[{:.1f}, {:.1f}] Y[{:.1f}, {:.1f}] Z[{:.1f}, {:.1f}]".format(
+                            stl_bounds[0], stl_bounds[1], stl_bounds[2], stl_bounds[3],
+                            stl_bounds[4], stl_bounds[5]))
+                
+                # Display STL as SOLID SURFACE with edges - this is the main geometry
+                stl_display = pv.Show(stl_reader, renderView)
+                
+                # Use Surface representation (edges can be too cluttered with many vertices)
+                # For high-resolution STL files, Surface alone is clearer
+                stl_display.Representation = 'Surface'
+                
+                stl_display.Opacity = 1.0  # Fully opaque - this is what we want to see
+                
+                # Use a more visible color for buildings - light beige/tan
+                stl_display.DiffuseColor = [0.85, 0.80, 0.75]  # Light beige for buildings
+                stl_display.AmbientColor = [0.3, 0.3, 0.3]  # Ambient lighting
+                stl_display.SpecularColor = [1.0, 1.0, 1.0]  # White specular highlights
+                stl_display.SpecularPower = 30.0  # Shiny surface
+                
+                stl_display.EdgeColor = [0.1, 0.1, 0.1]  # Dark gray edges for definition
+                try:
+                    stl_display.LineWidth = 0.5  # Thin edges to avoid clutter with many vertices
+                except:
+                    pass
+                
+                # Enable lighting for better 3D appearance
+                stl_display.Ambient = 0.3
+                stl_display.Diffuse = 0.7
+                stl_display.Specular = 0.2
+                
+                print("  [OK] STL geometry loaded and displayed as primary element (light beige with edges)")
+            except Exception as e:
+                print("  [WARN] Could not load STL geometry: {}".format(str(e)))
+                stl_reader = None
+        else:
+            print("  [WARN] STL file not found, will use mesh surfaces only")
+    
+    # Step 2: Add flow field visualization around the geometry
+    # Use the full volume (or clipped to exclude far boundaries) for streamlines
+    if not bounds or len(bounds) < 6:
+        if case_path:
+            case_name = os.path.basename(case_path)
+            if 'Vidigal' in case_name or 'vidigal' in case_name:
+                x_min, x_max = -445.21, 1210.54
+                y_min, y_max = -531.42, 524.92
+                z_min, z_max = 133.11, 584.49
+            else:
+                x_min, x_max = 0.0, 230.0
+                y_min, y_max = 0.0, 250.0
+                z_min, z_max = 0.0, 60.0
+        else:
+            x_min, x_max = 0.0, 230.0
+            y_min, y_max = 0.0, 250.0
+            z_min, z_max = 0.0, 60.0
+    else:
+        x_min, x_max = bounds[0], bounds[1]
+        y_min, y_max = bounds[2], bounds[3]
+        z_min, z_max = bounds[4], bounds[5]
+    
+    # Calculate buffer for excluding far boundaries (but keep flow field around buildings)
+    x_size = abs(x_max - x_min)
+    y_size = abs(y_max - y_min)
+    z_size = abs(z_max - z_min)
+    max_size = max(x_size, y_size, z_size)
+    
+    # Use moderate buffer to exclude far boundaries but keep flow around buildings
+    buffer = max(1.0, min(max_size * 0.05, 200.0))  # 5% buffer, max 200m
+    print("  Using buffer: {:.2f} m to exclude far boundaries".format(buffer))
+    
+    # Clip volume to exclude far boundaries but keep flow around buildings
+    clip_volume = pv.Clip(Input=reader)
+    clip_volume.ClipType = 'Box'
+    clip_volume.ClipType.Bounds = [
+        x_min + buffer, x_max - buffer,
+        y_min + buffer, y_max - buffer,
+        z_min, z_max - buffer
+    ]
+    clip_volume.Invert = 0
+    clip_volume.UpdatePipeline()
+    
+    # Step 3: Add streamlines to show flow around buildings
+    line1 = pv.Line()
+    if bounds and len(bounds) >= 6:
+        if max_size > 500:
+            # Seed streamlines upstream of buildings
+            line1.Point1 = [x_min + buffer * 2, y_min + buffer, center[2]]
+            line1.Point2 = [x_min + buffer * 2, y_max - buffer, center[2]]
+            line1.Resolution = 30  # More seed points for better coverage
+        else:
+            line1.Point1 = [x_min + buffer, y_min, center[2]]
+            line1.Point2 = [x_max - buffer, y_max, center[2]]
+            line1.Resolution = 20
+    else:
+        line1.Point1 = [0.5, 0.0, center[2]]
+        line1.Point2 = [229.5, 250.0, center[2]]
+        line1.Resolution = 20
+    
+    streamTracer1 = pv.StreamTracer(Input=clip_volume, SeedType=line1)
+    try:
+        streamTracer1.Vectors = ['CELLS', 'U']
+    except:
+        streamTracer1.Vectors = ['POINTS', 'U']
+    
+    if max_size > 500:
+        max_length = max(max_size * 0.4, 100.0)  # Longer streamlines for large domain
+        max_length = min(max_length, 1500.0)
+    else:
+        max_length = max(max_size * 0.6, 20.0)
+        max_length = min(max_length, 500.0)
+    
+    streamTracer1.MaximumStreamlineLength = max_length
+    streamTracer1.IntegrationDirection = 'BOTH'
+    streamTracer1.UpdatePipeline()
+    
+    # Display streamlines - these show flow around the STL geometry
+    streamDisplay = pv.Show(streamTracer1, renderView)
+    streamDisplay.Representation = 'Surface'
+    streamDisplay.LineWidth = 3.5  # Thick lines for visibility
+    streamDisplay.Opacity = 0.9  # Slightly transparent so STL shows through
+    
+    # Color streamlines by temperature
+    try:
+        streamDisplay.ColorArrayName = ['CELLS', 'T']
+    except:
+        try:
+            streamDisplay.ColorArrayName = ['POINTS', 'T']
+        except:
+            streamDisplay.ColorArrayName = 'T'
+    
+    # Make streamlines render before STL so buildings are on top
+    try:
+        streamDisplay.SetRenderOrder(0)  # Render first
+    except:
+        pass
+    
+    # Get temperature range from streamlines
+    tempRange = get_data_range(streamTracer1, 'T', use_points=True)
+    if not tempRange:
+        tempRange = get_data_range(clip_volume, 'T', use_points=True)
+    
+    # Set color map
+    colorMap = pv.GetColorTransferFunction('T')
+    streamDisplay.LookupTable = colorMap
+    
+    if tempRange and len(tempRange) >= 2 and tempRange[0] != tempRange[1]:
+        minVal = tempRange[0]
+        maxVal = tempRange[1]
+        midVal = (minVal + maxVal) / 2.0
+        colorMap.RGBPoints = [
+            minVal, 0.0, 0.0, 1.0,
+            midVal, 1.0, 1.0, 1.0,
+            maxVal, 1.0, 0.0, 0.0
+        ]
+        print("  Temperature range: {:.2f} to {:.2f} K".format(minVal, maxVal))
+    else:
+        minVal = 290.0
+        maxVal = 320.0
+        midVal = (minVal + maxVal) / 2.0
+        colorMap.RGBPoints = [
+            minVal, 0.0, 0.0, 1.0,
+            midVal, 1.0, 1.0, 1.0,
+            maxVal, 1.0, 0.0, 0.0
+        ]
+    
+    # Step 4: Optionally add a transparent slice BELOW buildings to show temperature field
+    # This helps visualize the flow field around buildings without obscuring them
+    slice1 = None
+    if stl_bounds:
+        # Create a horizontal slice below building height (ground level)
+        slice_z = stl_bounds[4] + 5.0  # Just above ground, below buildings
+        slice1 = pv.Slice(Input=clip_volume)
+        slice1.SliceType = 'Plane'
+        slice1.SliceType.Origin = [center[0], center[1], slice_z]
+        slice1.SliceType.Normal = [0.0, 0.0, 1.0]
+        slice1.UpdatePipeline()
+        
+        sliceDisplay = pv.Show(slice1, renderView)
+        sliceDisplay.Representation = 'Surface'
+        sliceDisplay.Opacity = 0.2  # Very transparent - just to show field, won't obscure STL
+        try:
+            sliceDisplay.ColorArrayName = ['CELLS', 'T']
+        except:
+            try:
+                sliceDisplay.ColorArrayName = ['POINTS', 'T']
+            except:
+                sliceDisplay.ColorArrayName = 'T'
+        sliceDisplay.LookupTable = colorMap
+        
+        # Make sure slice renders before STL (lower render order)
+        try:
+            sliceDisplay.SetRenderOrder(0)  # Render first, behind STL
+        except:
+            pass
+    
+    # Add scalar bar
+    tempScalarBar = pv.GetScalarBar(colorMap, renderView)
+    tempScalarBar.Title = 'Temperature [K]'
+    tempScalarBar.Visibility = 1
+    tempScalarBar.WindowLocation = 'UpperLeftCorner'
+    
+    # Step 5: Set up camera to focus on STL geometry
+    renderView.ResetCamera()
+    camera = renderView.GetActiveCamera()
+    
+    # Use STL bounds if available, otherwise use domain bounds
+    if stl_bounds and len(stl_bounds) >= 6:
+        x_center = (stl_bounds[0] + stl_bounds[1]) / 2.0
+        y_center = (stl_bounds[2] + stl_bounds[3]) / 2.0
+        z_center = (stl_bounds[4] + stl_bounds[5]) / 2.0
+        
+        x_size = abs(stl_bounds[1] - stl_bounds[0])
+        y_size = abs(stl_bounds[3] - stl_bounds[2])
+        z_size = abs(stl_bounds[5] - stl_bounds[4])
+        max_size = max(x_size, y_size, z_size)
+        
+        print("  Focusing camera on STL geometry")
+    elif bounds and len(bounds) >= 6:
+        x_center = (bounds[0] + bounds[1]) / 2.0
+        y_center = (bounds[2] + bounds[3]) / 2.0
+        z_center = (bounds[4] + bounds[5]) / 2.0
+        
+        x_size = abs(bounds[1] - bounds[0])
+        y_size = abs(bounds[3] - bounds[2])
+        z_size = abs(bounds[5] - bounds[4])
+        max_size = max(x_size, y_size, z_size)
+    else:
+        x_center, y_center, z_center = center[0], center[1], center[2]
+        max_size = 100.0
+    
+    # Isometric view focused on geometry
+    import math
+    elevation = 45.0
+    azimuth = 45.0
+    elev_rad = math.radians(elevation)
+    azim_rad = math.radians(azimuth)
+    distance = max_size * 1.8  # Good distance to see geometry and flow
+    
+    camera_x = x_center + distance * math.cos(elev_rad) * math.cos(azim_rad)
+    camera_y = y_center + distance * math.cos(elev_rad) * math.sin(azim_rad)
+    camera_z = z_center + distance * math.sin(elev_rad)
+    
+    camera.SetPosition([camera_x, camera_y, camera_z])
+    camera.SetFocalPoint([x_center, y_center, z_center])
+    camera.SetViewUp([0.0, 0.0, 1.0])
+    camera.OrthogonalizeViewUp()
+    
+    # Reset camera to STL bounds if available
+    if stl_bounds:
+        renderView.ResetCamera(stl_bounds)
+        camera.Zoom(1.2)  # Slight zoom to focus on buildings
+    elif bounds:
+        renderView.ResetCamera(bounds)
+    
+    renderView.Update()
+    pv.Render()
+    
+    # Save image
+    pv.SaveScreenshot(output_path, renderView, ImageResolution=[width, height])
+    print("[OK] Geometry-focused view saved: {}".format(output_path))
+    
+    # Clean up
+    pv.Delete(streamTracer1)
+    pv.Delete(line1)
     pv.Delete(clip_volume)
+    if slice1:
+        pv.Delete(slice1)
+    if stl_reader:
+        pv.Delete(stl_reader)
     pv.Delete(renderView)
     
     return output_path
@@ -1019,12 +1630,31 @@ def create_velocity_vectors(reader, output_path, width=1200, height=800, case_pa
     """
     # Get domain bounds and center dynamically
     bounds, center = get_domain_bounds_and_center(reader, case_path)
-    if center is None:
+    
+    # Create render view first to load STL and get geometry bounds
+    renderView = pv.CreateView('RenderView')
+    renderView.ViewSize = [width, height]
+    renderView.Background = [0.32, 0.34, 0.43]  # Dark gray background
+    
+    # Load STL geometry as base (if available) to get geometry bounds
+    stl_reader, stl_display, stl_bounds = load_stl_geometry(case_path, renderView)
+    if stl_reader:
+        print("  STL geometry loaded as base")
+    
+    # Use STL bounds to position slice at geometry height, otherwise use domain center
+    if stl_bounds and len(stl_bounds) >= 6:
+        # Position slice at mid-height of geometry
+        slice_z = (stl_bounds[4] + stl_bounds[5]) / 2.0
+        slice_origin = [(stl_bounds[0] + stl_bounds[1]) / 2.0,
+                        (stl_bounds[2] + stl_bounds[3]) / 2.0,
+                        slice_z]
+        print("  Using slice origin at geometry center: [{:.2f}, {:.2f}, {:.2f}]".format(*slice_origin))
+    elif center is not None:
+        slice_origin = [center[0], center[1], center[2]]
+        print("  Using slice origin at domain center: [{:.2f}, {:.2f}, {:.2f}]".format(*slice_origin))
+    else:
         slice_origin = [0.5, 0.5, 0.005]
         print("  [WARN] Using default slice origin: {}".format(slice_origin))
-    else:
-        slice_origin = [center[0], center[1], center[2]]
-        print("  Using slice origin: [{:.2f}, {:.2f}, {:.2f}]".format(*slice_origin))
     
     # Create slice first
     slice1 = pv.Slice(Input=reader)
@@ -1032,19 +1662,17 @@ def create_velocity_vectors(reader, output_path, width=1200, height=800, case_pa
     slice1.SliceType.Origin = slice_origin
     slice1.SliceType.Normal = [0.0, 0.0, 1.0]
     
-    # Create glyphs for velocity vectors
-    glyph1 = pv.Glyph(Input=slice1, GlyphType='Arrow')
-    glyph1.OrientationArray = ['CELLS', 'U']
-    glyph1.ScaleArray = ['CELLS', 'U']
-    glyph1.ScaleFactor = 0.1
-    glyph1.GlyphMode = 'Every Nth Point'
-    glyph1.Stride = 5  # Show every 5th point to avoid clutter
-    glyph1.GlyphTransform = 'Transform2'
-    
-    # Create render view
-    renderView = pv.CreateView('RenderView')
-    renderView.ViewSize = [width, height]
-    renderView.Background = [0.32, 0.34, 0.43]  # Dark gray background
+    # Add bounding box wireframe to show geometry boundaries (use STL bounds if available)
+    bounding_box = None
+    if stl_bounds and len(stl_bounds) >= 6:
+        bounding_box = add_bounding_box_wireframe(stl_bounds, renderView)
+        if bounding_box:
+            print("  Geometry bounding box wireframe added")
+    elif bounds and len(bounds) >= 6:
+        # Fallback to domain bounds if STL not available
+        bounding_box = add_bounding_box_wireframe(bounds, renderView)
+        if bounding_box:
+            print("  Domain bounding box wireframe added")
     
     # Compute velocity magnitude for coloring
     calculator1 = pv.Calculator(Input=slice1)
@@ -1068,9 +1696,31 @@ def create_velocity_vectors(reader, output_path, width=1200, height=800, case_pa
     sliceInfo = slice1.GetDataInformation()
     num_points = sliceInfo.GetNumberOfPoints() if sliceInfo else None
     
-    # Calculate adaptive stride based on mesh density
-    stride = calculate_adaptive_stride(num_points, target_num_vectors=400)
-    print("  Slice has {} points, using stride: {}".format(num_points if num_points else "unknown", stride))
+    # Calculate adaptive stride - use fewer vectors for clearer visualization
+    # Focus on geometry area: use STL bounds to estimate area if available
+    if stl_bounds and len(stl_bounds) >= 6:
+        # Calculate geometry area
+        x_size = abs(stl_bounds[1] - stl_bounds[0])
+        y_size = abs(stl_bounds[3] - stl_bounds[2])
+        geometry_area = x_size * y_size
+        # Target much fewer vectors for clearer visualization (80-120 vectors)
+        # This provides better clarity without overwhelming the view
+        target_num_vectors = max(80, min(120, int(geometry_area / 200.0)))
+    else:
+        # Default to fewer vectors
+        target_num_vectors = 100
+    
+    # Calculate stride directly to match target number of vectors
+    if num_points and num_points > 0:
+        stride = max(1, int(num_points / target_num_vectors))
+        # Ensure stride is reasonable (not too small, not too large)
+        stride = max(10, min(stride, 1000))
+    else:
+        stride = calculate_adaptive_stride(num_points, target_num_vectors=target_num_vectors)
+    
+    print("  Slice has {} points, using stride: {} (target: {} vectors, actual: ~{} vectors)".format(
+        num_points if num_points else "unknown", stride, target_num_vectors,
+        int(num_points / stride) if num_points and stride > 0 else "unknown"))
     
     glyph2.GlyphMode = 'Every Nth Point'
     glyph2.Stride = stride
@@ -1183,8 +1833,20 @@ def create_velocity_vectors(reader, output_path, width=1200, height=800, case_pa
     scalarBar.Title = 'Velocity Magnitude [m/s]'
     scalarBar.Visibility = 1
     
-    # Reset camera and render
-    renderView.ResetCamera()
+    # Focus camera on geometry bounds (STL bounds) if available
+    if stl_bounds and len(stl_bounds) >= 6:
+        # Reset camera to geometry bounds
+        renderView.ResetCamera(stl_bounds)
+        camera = renderView.GetActiveCamera()
+        # Zoom in slightly to focus on geometry
+        camera.Zoom(1.2)
+        print("  Camera focused on geometry bounds")
+    else:
+        # Fallback to domain bounds
+        renderView.ResetCamera()
+        if bounds and len(bounds) >= 6:
+            renderView.ResetCamera(bounds)
+    
     renderView.Update()
     pv.Render()
     
@@ -1196,6 +1858,10 @@ def create_velocity_vectors(reader, output_path, width=1200, height=800, case_pa
     pv.Delete(glyph2)
     pv.Delete(calculator1)
     pv.Delete(slice1)
+    if bounding_box:
+        pv.Delete(bounding_box)
+    if stl_reader:
+        pv.Delete(stl_reader)
     pv.Delete(renderView)
     
     return output_path
@@ -1242,12 +1908,30 @@ def create_streamlines(reader, output_path, width=1200, height=800, case_path=No
     renderView.ViewSize = [width, height]
     renderView.Background = [0.32, 0.34, 0.43]  # Dark gray background
     
+    # Load STL geometry as base (if available)
+    stl_reader, stl_display, stl_bounds = load_stl_geometry(case_path, renderView)
+    if stl_reader:
+        print("  STL geometry loaded as base")
+    
+    # Add bounding box wireframe to show geometry boundaries (use STL bounds if available)
+    bounding_box = None
+    if stl_bounds and len(stl_bounds) >= 6:
+        bounding_box = add_bounding_box_wireframe(stl_bounds, renderView)
+        if bounding_box:
+            print("  Geometry bounding box wireframe added")
+    elif bounds and len(bounds) >= 6:
+        # Fallback to domain bounds if STL not available
+        bounding_box = add_bounding_box_wireframe(bounds, renderView)
+        if bounding_box:
+            print("  Domain bounding box wireframe added")
+    
     streamTracer1.UpdatePipeline()
     
-    # Display streamlines colored by temperature
+    # Display streamlines colored by temperature - make translucent to show STL
     streamDisplay = pv.Show(streamTracer1, renderView)
     streamDisplay.Representation = 'Surface'
-    streamDisplay.LineWidth = 2.0  # Make streamlines visible
+    streamDisplay.LineWidth = 3.0  # Make streamlines visible
+    streamDisplay.Opacity = 0.8  # Translucent to show STL geometry
     
     # Try CELLS first (T is typically a cell array), then POINTS
     try:
@@ -1310,6 +1994,10 @@ def create_streamlines(reader, output_path, width=1200, height=800, case_path=No
     # Clean up
     pv.Delete(streamTracer1)
     pv.Delete(line1)
+    if bounding_box:
+        pv.Delete(bounding_box)
+    if stl_reader:
+        pv.Delete(stl_reader)
     pv.Delete(renderView)
     
     return output_path
@@ -1348,9 +2036,26 @@ def create_overview(reader, output_path, width=2400, height=1600, case_path=None
     renderView.ViewSize = [width, height]
     renderView.Background = [0.32, 0.34, 0.43]  # Dark gray background
     
+    # Load STL geometry as base (if available)
+    stl_reader, stl_display, stl_bounds = load_stl_geometry(case_path, renderView)
+    if stl_reader:
+        print("  STL geometry loaded as base")
+    
+    # Add bounding box wireframe to show geometry boundaries (use STL bounds if available)
+    bounding_box = None
+    if stl_bounds and len(stl_bounds) >= 6:
+        bounding_box = add_bounding_box_wireframe(stl_bounds, renderView)
+        if bounding_box:
+            print("  Geometry bounding box wireframe added")
+    elif bounds and len(bounds) >= 6:
+        # Fallback to domain bounds if STL not available
+        bounding_box = add_bounding_box_wireframe(bounds, renderView)
+        if bounding_box:
+            print("  Domain bounding box wireframe added")
+    
     slice1.UpdatePipeline()
     
-    # Display temperature slice
+    # Display temperature slice - make translucent to show STL and vectors
     sliceDisplay = pv.Show(slice1, renderView)
     sliceDisplay.Representation = 'Surface'
     # T is a cell array in OpenFOAM
@@ -1358,7 +2063,7 @@ def create_overview(reader, output_path, width=2400, height=1600, case_path=None
         sliceDisplay.ColorArrayName = ['CELLS', 'T']
     except:
         sliceDisplay.ColorArrayName = ['POINTS', 'T']
-    sliceDisplay.Opacity = 0.7  # Semi-transparent to show vectors
+    sliceDisplay.Opacity = 0.5  # More transparent to show STL geometry and vectors
     
     renderView.Update()
     pv.Render()
@@ -1445,6 +2150,10 @@ def create_overview(reader, output_path, width=2400, height=1600, case_path=None
     pv.Delete(glyph1)
     pv.Delete(calculator1)
     pv.Delete(slice1)
+    if bounding_box:
+        pv.Delete(bounding_box)
+    if stl_reader:
+        pv.Delete(stl_reader)
     pv.Delete(renderView)
     
     return output_path
@@ -1607,6 +2316,11 @@ def main():
             geometry_path = os.path.join(output_dir, "geometry_3d_{}.png".format(time_dir))
             create_geometry_3d_view(reader, geometry_path, args.width, args.height, case_path)
             images.append(geometry_path)
+            
+            # Geometry-focused view with STL overlay and wireframe edges
+            geometry_focused_path = os.path.join(output_dir, "geometry_focused_{}.png".format(time_dir))
+            create_geometry_focused_view(reader, geometry_focused_path, args.width, args.height, case_path)
+            images.append(geometry_focused_path)
         
         # Velocity vectors
         vel_path = os.path.join(output_dir, "velocity_{}.png".format(time_dir))
