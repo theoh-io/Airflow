@@ -1,8 +1,8 @@
 # microClimateFoam Roadmap
 
-> **Current Priority**: Vidigal_CFD Case Creation
+> **Current Priority**: Vidigal_CFD Accuracy Validation & Advanced Physics Integration
 > 
-> Create new STL-based case `cases/Vidigal_CFD/` using `streetCanyon_CFD` as a template. This involves setting up STL-based meshing with `snappyHexMesh`, configuring multi-region setup, and integrating with the `urbanMicroclimateFoam` solver. See `docs/CASE_CREATION_PLAN.md` for detailed implementation plan.
+> Before running full simulations, ensure accuracy and integrate advanced physics models (radiation and humidity) into the Vidigal_CFD case. This includes mesh quality validation, radiation modeling setup, humidity transport configuration, and accuracy verification tests. See `docs/VIDIGAL_STATUS.md` for current status.
 
 ## Phase 0 — Environment & Skeleton (✅ Done)
 - Docker image (`openfoam/openfoam8-paraview56`) builds successfully.
@@ -138,11 +138,11 @@
 - Current quick test (deltaT=3600s, 12 steps): 1-6 hours (too long for CI)
 - Full simulation (deltaT=3600s, 24 steps): 2-12+ hours (not for CI)
 
-## Phase 5.2 — Vidigal_CFD Case Creation (IN PROGRESS)
+## Phase 5.2 — Vidigal_CFD Case Creation (✅ MOSTLY COMPLETE)
 
 **Goal**: Create a new STL-based CFD case (`Vidigal_CFD`) for urban microclimate simulations using `urbanMicroclimateFoam` solver.
 
-**Description**: This case will use STL geometry provided by the user and implement STL-based meshing using `snappyHexMesh`, unlike the existing tutorial cases which use `blockMesh`. This demonstrates the workflow for creating custom cases with complex geometries.
+**Description**: This case uses STL geometry and implements STL-based meshing using `snappyHexMesh`, unlike the existing tutorial cases which use `blockMesh`. This demonstrates the workflow for creating custom cases with complex geometries.
 
 **Key Tasks**:
 - [x] **Phase 1**: Directory setup and template copy from `streetCanyon_CFD`
@@ -155,30 +155,25 @@
   - [x] Configure `snappyHexMeshDict` for STL-based meshing
   - [x] Set up mesh generation automation scripts
   - [x] Generate background mesh (6.4M cells) ✅
-  - [~] snappyHexMesh refinement (IN PROGRESS - partially complete, needs restart)
-    - [x] Surface refinement iterations completed
-    - [x] Mesh cleanup and baffle handling started
-    - [ ] Final mesh refinement and snap phase completion
-- [ ] **Phase 3**: Multi-region setup
-  - [ ] Determine required regions based on STL geometry
-  - [ ] Configure `constant/regionProperties`
-  - [ ] Set up region boundaries and interface patches
-- [ ] **Phase 4**: Boundary conditions and initial fields
-  - [ ] Update initial field files in `0/` directory
-  - [ ] Configure boundary patch names from STL-based mesh
-  - [ ] Set up inlet/outlet and wall boundary conditions
-- [ ] **Phase 5**: Solver configuration
-  - [ ] Verify `urbanMicroclimateFoam` solver configuration
-  - [ ] Configure turbulence model
-  - [ ] Set thermophysical properties for Vidigal conditions
-- [ ] **Phase 6**: Scripts and automation
-  - [ ] Update `Allrun` script for STL-based workflow
-  - [ ] Update `Allclean` script
-  - [ ] Create case `README.md` documentation
-- [ ] **Phase 7**: Testing and validation
-  - [ ] Test mesh generation and verify mesh quality
-  - [ ] Run quick validation test (`--quick-validation`)
-  - [ ] Generate visualizations and validate results
+  - [x] snappyHexMesh refinement completed ✅
+- [x] **Phase 3**: Boundary conditions and initial fields
+  - [x] Update initial field files in `0/` directory
+  - [x] Configure boundary patch names from STL-based mesh
+  - [x] Set up inlet/outlet and wall boundary conditions
+- [x] **Phase 4**: Solver configuration
+  - [x] Verify `urbanMicroclimateFoam` solver configuration
+  - [x] Configure turbulence model
+  - [x] Set thermophysical properties for Vidigal conditions
+- [x] **Phase 5**: Scripts and automation
+  - [x] Update `Allrun` script for STL-based workflow
+  - [x] Update `Allclean` script
+  - [x] Create case `README.md` documentation
+- [x] **Phase 6**: Initial testing and validation
+  - [x] Test mesh generation and verify mesh quality
+  - [x] Run quick validation test (time step 50 completed)
+  - [x] Generate initial visualizations
+
+**Current Status**: Case is functional and has been successfully run. Quick validation completed (time step 50). Ready for accuracy validation and advanced physics integration.
 
 **Documentation**:
 - [x] Created comprehensive case creation plan (`docs/CASE_CREATION_PLAN.md`)
@@ -188,16 +183,145 @@
 - [x] Created mesh generation status reports
 - [x] Created `docs/VIDIGAL_STATUS.md` with detailed progress tracking
 
-**Success Criteria**:
-- Case directory structure created and organized
-- STL file integrated and meshing successful
-- Multi-region setup working with `urbanMicroclimateFoam`
-- Quick validation run completes successfully
-- Case documented and ready for use
-
-**Estimated Timeline**: 8-14 hours (depending on STL complexity and mesh refinement)
-
 **See**: `docs/CASE_CREATION_PLAN.md` for detailed implementation guide
+
+---
+
+## Phase 5.3 — Vidigal_CFD Accuracy Validation & Advanced Physics Integration (🔄 CURRENT PRIORITY)
+
+**Goal**: Ensure simulation accuracy and integrate advanced physics models (radiation and humidity) before running full production simulations.
+
+**Description**: Before extending to full simulation runs, validate mesh quality, solution accuracy, and integrate radiation and humidity transport models. This ensures the case produces physically accurate results for urban microclimate analysis.
+
+**Key Tasks**:
+
+### Accuracy Validation
+- [ ] **Mesh Quality Assessment**
+  - [ ] Run comprehensive `checkMesh` analysis
+  - [ ] Verify mesh quality metrics (skewness, non-orthogonality, aspect ratio)
+  - [ ] Check mesh resolution adequacy for physics (boundary layer, surface refinement)
+  - [ ] Document mesh statistics and quality metrics
+- [ ] **Solution Accuracy Verification**
+  - [ ] Grid convergence study (if needed)
+  - [ ] Compare results with reference cases (streetCanyon_CFD)
+  - [ ] Validate field ranges (temperature, velocity, pressure)
+  - [ ] Check boundary condition implementation
+  - [ ] Verify turbulence model behavior
+- [ ] **Sensitivity Analysis**
+  - [ ] Test different time step sizes
+  - [ ] Verify solver convergence
+  - [ ] Check numerical stability
+
+### Radiation Modeling Integration
+- [ ] **Radiation Configuration**
+  - [ ] Create `constant/air/radiationProperties` file
+  - [ ] Create `constant/air/solarLoadProperties` file
+  - [ ] Configure view factor-based radiation model
+  - [ ] Set up solar load model (direct and diffuse)
+  - [ ] Configure emissivity and albedo properties
+- [ ] **Radiation Fields Setup**
+  - [ ] Add `qr` field (longwave radiation) to `0/air/`
+  - [ ] Add `qs` field (shortwave/solar radiation) to `0/air/`
+  - [ ] Configure radiation boundary conditions for all patches
+  - [ ] Set up sky view factors
+  - [ ] Configure sun position and solar radiation parameters
+- [ ] **Radiation Testing**
+  - [ ] Run quick validation with radiation enabled
+  - [ ] Verify radiation field initialization
+  - [ ] Check radiation boundary condition coupling
+  - [ ] Validate radiation energy balance
+
+### Humidity/Moisture Transport Integration
+- [ ] **Humidity Configuration Review**
+  - [ ] Verify existing `w` field configuration (already present)
+  - [ ] Review humidity boundary conditions
+  - [ ] Check humidity transport properties
+  - [ ] Verify coupling with temperature/enthalpy
+- [ ] **Humidity Boundary Conditions**
+  - [ ] Configure inlet humidity conditions
+  - [ ] Set up wall humidity boundary conditions
+  - [ ] Verify humidity transport in air region
+  - [ ] Test humidity field evolution
+- [ ] **Humidity Testing**
+  - [ ] Run quick validation with humidity transport
+  - [ ] Verify humidity field initialization
+  - [ ] Check humidity conservation
+  - [ ] Validate humidity-temperature coupling
+
+### Combined Physics Validation
+- [ ] **Integrated Model Testing**
+  - [ ] Run quick validation with radiation + humidity enabled
+  - [ ] Verify all physics models work together
+  - [ ] Check energy balance (radiation + convection + humidity)
+  - [ ] Validate field interactions
+- [ ] **Accuracy Metrics**
+  - [ ] Compare results with/without advanced physics
+  - [ ] Document impact of radiation and humidity on results
+  - [ ] Verify physical realism of combined model
+- [ ] **Performance Assessment**
+  - [ ] Measure computational cost of advanced physics
+  - [ ] Optimize solver settings if needed
+  - [ ] Document expected runtime with full physics
+
+### Documentation
+- [ ] **Configuration Documentation**
+  - [ ] Document radiation setup and parameters
+  - [ ] Document humidity configuration
+  - [ ] Create accuracy validation report
+  - [ ] Update case README with physics models
+- [ ] **Validation Report**
+  - [ ] Document mesh quality metrics
+  - [ ] Record accuracy validation results
+  - [ ] Create comparison with reference cases
+  - [ ] Document recommended settings for production runs
+
+**Success Criteria**:
+- Mesh quality validated and documented
+- Solution accuracy verified
+- Radiation modeling integrated and tested
+- Humidity transport integrated and tested
+- Combined physics model validated
+- Accuracy validation report completed
+- Case ready for full production simulations
+
+**Estimated Timeline**: 6-10 hours (depending on validation requirements and physics integration complexity)
+
+**Note**: Vegetation modeling is deferred until tree/vegetation data is available. Current focus is on radiation and humidity in the air region only.
+
+**See**: 
+- `docs/VIDIGAL_STATUS.md` for current status
+- `cases/streetCanyon_CFDHAM/` for reference implementation
+- `docs/SOLVERS/urbanMicroclimateFoam.md` for solver capabilities
+
+## Phase 5.4 — Vidigal_CFD Full Production Simulation (PLANNED - After Phase 5.3)
+
+**Goal**: Run full production simulations with validated accuracy and integrated advanced physics.
+
+**Description**: Once accuracy is validated and advanced physics (radiation, humidity) are integrated and tested, extend simulation time for full production runs and comprehensive analysis.
+
+**Key Tasks**:
+- [ ] **Simulation Configuration**
+  - [ ] Set appropriate `endTime` for full simulation (e.g., 24-48 hours)
+  - [ ] Configure `deltaT` for stability and accuracy
+  - [ ] Set up field output intervals
+  - [ ] Configure post-processing functions
+- [ ] **Production Run**
+  - [ ] Execute full simulation
+  - [ ] Monitor convergence and stability
+  - [ ] Handle any runtime issues
+- [ ] **Results Analysis**
+  - [ ] Generate comprehensive visualizations
+  - [ ] Extract field statistics
+  - [ ] Analyze pedestrian-level conditions
+  - [ ] Compare with validation data (if available)
+- [ ] **Documentation**
+  - [ ] Document simulation parameters
+  - [ ] Create results summary
+  - [ ] Update case documentation
+
+**Prerequisites**: Phase 5.3 must be completed (accuracy validated, radiation and humidity integrated)
+
+---
 
 ## Phase 6 — Case Management & Standardization (PLANNED)
 - [ ] Case metadata system:
@@ -238,6 +362,11 @@
 - [ ] Performance optimization
 - [ ] Extended post-processing tools
 - [ ] Additional physics models
+- [ ] Vegetation modeling (when tree/vegetation data available)
+  - [ ] Add vegetation region to Vidigal_CFD
+  - [ ] Configure vegetation properties
+  - [ ] Integrate vegetation energy balance
+  - [ ] Couple with air region for heat and moisture exchange
 
 > Update this roadmap as phases complete or tasks evolve so that contributors have a single source of truth.
 
