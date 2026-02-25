@@ -31,7 +31,7 @@ geometry
     {
         type triSurfaceMesh;
         name vidigal;
-        file "vidigal.stl";
+        file "repair/vidigal_meshfix_default.stl";
         location "constant/triSurface";
     }
 }

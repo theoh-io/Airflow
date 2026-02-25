@@ -1,0 +1,80 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+Build  : 8-1c9b5879390b
+Exec   : surfaceCheck constant/triSurface/repair/vidigal_meshfix_join_all.stl
+Date   : Feb 25 2026
+Time   : 13:16:29
+Host   : "d18b1051e4c5"
+PID    : 145
+I/O    : uncollated
+Case   : /workspace/cases/Vidigal_CFD
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 10)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Reading surface from "constant/triSurface/repair/vidigal_meshfix_join_all.stl" ...
+
+Statistics:
+Triangles    : 2656
+Vertices     : 1330
+Bounding Box : (-57.5 -34.2335 158.075) (16.6427 137.5 200.294)
+
+Region	Size
+------	----
+patch0	2656
+
+
+Surface has no illegal triangles.
+
+Triangle quality (equilateral=1, collapsed=0):
+    0 .. 0.05  : 0.0233434
+    0.05 .. 0.1  : 0.00978916
+    0.1 .. 0.15  : 0.00564759
+    0.15 .. 0.2  : 0.0101657
+    0.2 .. 0.25  : 0.0101657
+    0.25 .. 0.3  : 0.0161898
+    0.3 .. 0.35  : 0.0154367
+    0.35 .. 0.4  : 0.0143072
+    0.4 .. 0.45  : 0.0203313
+    0.45 .. 0.5  : 0.0176958
+    0.5 .. 0.55  : 0.0489458
+    0.55 .. 0.6  : 0.15738
+    0.6 .. 0.65  : 0.127636
+    0.65 .. 0.7  : 0.0557229
+    0.7 .. 0.75  : 0.0248494
+    0.75 .. 0.8  : 0.0263554
+    0.8 .. 0.85  : 0.0444277
+    0.85 .. 0.9  : 0.0753012
+    0.9 .. 0.95  : 0.144578
+    0.95 .. 1  : 0.151732
+
+    min 1.87402e-15 for triangle 468
+    max 0.999976 for triangle 1594
+
+Dumping bad quality faces to "badFaces"
+Paste this into the input for surfaceSubset
+
+
+Edges:
+    min 0.502106 for edge 2744 points (-57.5 35.8073 198.294)(-57.5 35.8073 197.792)
+    max 73.0008 for edge 28 points (16.6427 42.0198 158.075)(-1.18559 111.277 172.729)
+
+Checking for points less than 1e-6 of bounding box ((74.1427 171.734 42.219) metre) apart.
+Found 0 nearby points.
+
+Surface is closed. All edges connected to two faces.
+
+Number of unconnected parts : 1
+
+Number of zones (connected area with consistent normal) : 1
+
+
+End
+

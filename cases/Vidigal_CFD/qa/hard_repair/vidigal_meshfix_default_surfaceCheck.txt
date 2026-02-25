@@ -1,0 +1,76 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+Build  : 8-1c9b5879390b
+Exec   : surfaceCheck constant/triSurface/repair/vidigal_meshfix_default.stl
+Date   : Feb 25 2026
+Time   : 13:16:28
+Host   : "d18b1051e4c5"
+PID    : 141
+I/O    : uncollated
+Case   : /workspace/cases/Vidigal_CFD
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 10)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Reading surface from "constant/triSurface/repair/vidigal_meshfix_default.stl" ...
+
+Statistics:
+Triangles    : 6242
+Vertices     : 3123
+Bounding Box : (-57.5 -60.3154 133.845) (57.5 137.5 200.914)
+
+Region	Size
+------	----
+patch0	6242
+
+
+Surface has no illegal triangles.
+
+Triangle quality (equilateral=1, collapsed=0):
+    0 .. 0.05  : 0.0152195
+    0.05 .. 0.1  : 0.00512656
+    0.1 .. 0.15  : 0.00704902
+    0.15 .. 0.2  : 0.00272349
+    0.2 .. 0.25  : 0.0032041
+    0.25 .. 0.3  : 0.00656841
+    0.3 .. 0.35  : 0.00576738
+    0.35 .. 0.4  : 0.00881128
+    0.4 .. 0.45  : 0.0139378
+    0.45 .. 0.5  : 0.0310798
+    0.5 .. 0.55  : 0.0916373
+    0.55 .. 0.6  : 0.26594
+    0.6 .. 0.65  : 0.145146
+    0.65 .. 0.7  : 0.0352451
+    0.7 .. 0.75  : 0.018744
+    0.75 .. 0.8  : 0.0185838
+    0.8 .. 0.85  : 0.0315604
+    0.85 .. 0.9  : 0.0610381
+    0.9 .. 0.95  : 0.106056
+    0.95 .. 1  : 0.126562
+
+    min 2.10604e-05 for triangle 73
+    max 0.999976 for triangle 2217
+
+Edges:
+    min 0.502106 for edge 3869 points (-57.5 35.8073 198.294)(-57.5 35.8073 197.792)
+    max 106.83 for edge 149 points (-15.5138 -42.845 178.175)(57.5 21.4844 134.091)
+
+Checking for points less than 1e-6 of bounding box ((115 197.815 67.0692) metre) apart.
+Found 0 nearby points.
+
+Surface is closed. All edges connected to two faces.
+
+Number of unconnected parts : 1
+
+Number of zones (connected area with consistent normal) : 1
+
+
+End
+
