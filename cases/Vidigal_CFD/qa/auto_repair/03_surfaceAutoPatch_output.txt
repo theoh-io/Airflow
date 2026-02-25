@@ -1,0 +1,42 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+Build  : 8-1c9b5879390b
+Exec   : surfaceAutoPatch constant/triSurface/repair/vidigal_fixed.stl constant/triSurface/repair/vidigal_patched.stl 30
+Date   : Feb 25 2026
+Time   : 13:11:56
+Host   : "35d5ff64d113"
+PID    : 137
+I/O    : uncollated
+Case   : /workspace/cases/Vidigal_CFD
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 10)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Surface        : "constant/triSurface/repair/vidigal_fixed.stl"
+
+Reading : "constant/triSurface/repair/vidigal_fixed.stl"
+Read surface:
+Triangles    : 17424
+Vertices     : 10796
+Bounding Box : (-69.0634 -155.269 133.11) (82.0917 148.772 208.34)
+
+Constructing feature set from included angle 30
+
+Feature set:
+    feature points : 106
+    feature edges  : 3746
+    of which
+        region edges   : 3673
+        external edges : 30
+        internal edges : 43
+
+Writing : "constant/triSurface/repair/vidigal_patched.stl"
+End
+
